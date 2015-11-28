@@ -4,10 +4,11 @@ from operator import add, sub
 import math
 
 def load(image):
+    #print(pygame.image.load(image).convert_alpha())
     return pygame.image.load(image).convert_alpha()
 
 def adjToScreen(position, scale, windowWidth, windowHeight):
-    return myAdd(myMult(scale, position), (windowWidth / 2, windowHeight / 2))
+    return myAdd(myMult(scale, position), (windowWidth / 2, windowHeight / 2))            
 
 def x(point):
     return point[0]
@@ -35,14 +36,13 @@ def isInSquare(point, centerPoint, radius):
     return (abs(x(centerPoint) - x(point)) < radius and
             abs(y(centerPoint) - y(point)) < radius)
 
-# Blits an object to the screen with desired opacity
 def blitAlpha(target, source, location, opacity):
     x = location[0]
     y = location[1]
     temp = pygame.Surface((source.get_width(), source.get_height())).convert()
     temp.blit(target, (-x, -y))
     temp.blit(source, (0, 0))
-    temp.set_alpha(opacity)
+    temp.set_alpha(opacity)        
     target.blit(temp, location)
 
 def getOrDefault(array, i, default):

@@ -3,6 +3,7 @@ import os
 import pygame
 import objects
 import common
+#import canvas
 import checkers
 import drawers
 import movers
@@ -10,119 +11,174 @@ import movers
 def load(image):
     return common.load(os.path.join("images", image))
 
-#Returns half the height of a tile, adjusted to the scale
 def getAdjTileRad():
     return objects.TileSet.w.get_height() * objects.Canvas.scale / 2
 
-# Adds a tile to a specific region of the grid
-def toGrid(myCanvas, myObject, grid, resolution):
+def toGrid(canvas, myObject, grid, resolution):
     row = int(common.y(myObject.getPosition()) // resolution) + 1
     col = int(common.x(myObject.getPosition()) // resolution) + 1
+    #print("in")
+    #print(myObject)
+    #if isinstance(myObject, Tile):
+        #print("in2")
+    #print("togrid ", row, myObject.gridRow, col, myObject.gridCol)
     if not (row == myObject.gridRow and col == myObject.gridCol):
+        #print("in3")
+        #try:
+        #if myObject.gridRow >= 0 and myObject.gridCol >= 0:
+            #print("in4")
         if myObject.gridRow is not None:
             grid[myObject.gridRow][myObject.gridCol].remove(myObject)
-        if myObject.getRect().colliderect(0, 0, myCanvas.WIDTH,
-                myCanvas.HEIGHT):
+            #print("in5")
+        #Happens when creating new tile from pallet.  Removing tile
+        #not in list.
+        #except ValueError:
+            #print("in")
+            #pass
+        #except IndexError:
+            #print("in2")
+            #pass
+        #Should get an error for commenting out the next few lines,
+        #but I can't remember what causes it.
+        #except TypeError:
+            #print("in3")
+            #pass
+        if myObject.getSmallRect().colliderect(0, 0, canvas.WIDTH,
+                canvas.HEIGHT):
+            #print(myObject.position)
             myObject.gridRow = row
             myObject.gridCol = col
+            #print(row, col)
             grid[row][col].append(myObject)
         else:
             myObject.gridRow = myObject.gridCol = None
 
-# Puts tiles on to a grid
-def setGrid(myCanvas, tiles):
+def setGrid(canvas, tiles):
     gridRes = 2.2 * getAdjTileRad()
-    rowNum = int(myCanvas.HEIGHT // gridRes + 3)
-    colNum = int(myCanvas.WIDTH // gridRes + 3)
+    #self.grid = []
+    #print(WIDTH, Canvas.scale)
+    #Add 3 to make up for tiles going off edges of screen, and roudning
+    #down of //.
+    rowNum = int(canvas.HEIGHT // gridRes + 3)
+    #print("rownum", rowNum)
+    colNum = int(canvas.WIDTH // gridRes + 3)
+    #print("setGrid ", rowNum, colNum)
+    #print(colNum, rowNum)
+    '''
+    for i in range(rowNum):
+        self.grid.append([])
+        for j in range (colNum):
+            self.grid[i].append([])
+    '''
     grid = common.makeGrid(rowNum, colNum, "empty")
+    #self.grid = [[[] for j in range(colNum)] for i in range(rowNum)]
     for tile in tiles:
         tile.gridRow = tile.gridCol = None
-        toGrid(myCanvas, tile, grid, gridRes)
+        toGrid(canvas, tile, grid, gridRes)
+        #for corner in tile.corners:
+            #self.toGrid(corner, self.grid, self.gridRes)
     return grid, gridRes
 
-# Sets the size of the back of the tile pallet
-def resizePalletBack(myCanvas):
-    lastTile = myCanvas.tilePallet[-1]
+def resizePalletBack(canvas):
+    lastTile = canvas.tilePallet[-1]
     palletBack = pygame.Rect(0, 0, common.x(lastTile.position) +
             lastTile.scaledImage.get_width() / 2,
             lastTile.scaledImage.get_height())
     return palletBack
 
-# Resizes the display if the user is scrolling
-def scrollSize(myCanvas, tiles, grid, gridRes, palletBack, isScrollDown,
-        isScrollUp, dirtyRects, isDrawAll, windowSurface):
+def scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
+        isDrawAll, windowSurface):
     if isScrollDown or isScrollUp:
+        #print("in")
         for tile in tiles:
+            pygame.draw.rect(windowSurface, canvas.Canvas.BACK_COLOR,
+                    tile.getLargeRect())
+            dirtyRects.append(tile.getLargeRect())
+            tile.resize(canvas.Canvas.scale)
+            tile.scalePosition(canvas.Canvas.scale)
+            #print("in4")
+            #self.toGrid(tile, self.grid, self.gridRes)
+        grid, gridRes = setGrid(canvas, tiles)
+        for tile in canvas.tilePallet:
             pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
-                    tile.getRect())
-            dirtyRects.append(tile.getRect())
+                    tile.getLargeRect())
+            dirtyRects.append(tile.getLargeRect())
             tile.resize(objects.Canvas.scale)
             tile.scalePosition(objects.Canvas.scale)
-        grid, gridRes = setGrid(myCanvas, tiles)
-        for tile in myCanvas.tilePallet:
-            pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
-                    tile.getRect())
-            dirtyRects.append(tile.getRect())
-            tile.resize(objects.Canvas.scale)
-            tile.scalePosition(objects.Canvas.scale)
-            dirtyRects.append(tile.getRect())
-        palletBack = resizePalletBack(myCanvas)
+            dirtyRects.append(tile.getLargeRect())
+        palletBack = resizePalletBack(canvas)
         isDrawAll = True
     return grid, gridRes, palletBack, isDrawAll
 
-# Returns areas on a grid that are surrounding an area on a grid which
-# a location is in
 def getAreasToCheck(location, grid, gridRes):
     row = int(common.y(location) // gridRes) + 1
     col = int(common.x(location) // gridRes) + 1
+    #print("next")
+    #print(row, col)
+    #print("mouse ", row, col)
+    #if len(tiles) > 0:
+        #print("tile ", tiles[0].gridRow, tiles[0].gridCol)
+    #print(len(self.grid), len(self.grid[0]))
+    #print(len(self.grid), len(self.grid[0]))
     areasToCheck = []
     for i in range(-1, 1 + 1):
         for j in range(-1, 1 + 1):
             if (row + i >= 0 and col + j >= 0 and row + i < len(grid) and
                     col + j < len(grid[0])):
+                #print(row + i, col + j)
                 areasToCheck.append(grid[row + i][col + j])
     return areasToCheck
 
-# Sets selected tile or selected tiles and mouse offsets for tile/tiles
-# which have been selected.
-def setMouseOffset(myCanvas, tiles, selectedTiles, mouseLoc, isDrag,
-        selectedTile, grid, gridRes):
-    # Only areas near the clicked tile are checked to see if they were
-    # clicked on
+def setMouseOffset(canvas, tiles, selectedTiles, mouseLoc, isDrag,
+        selectedTile, isUnSelectOld, grid, gridRes):
+    #print("in")
     areasToCheck = getAreasToCheck(mouseLoc, grid, gridRes)
+    #print("mouseoffset ", areasToCheck)
+    #print("next")
+    #if self.selectedTile is not None:
+        #self.selectedTile.printGroup()
     for area in areasToCheck:
         for tile in area:
-            # Part of this next block insures that only the tile on top
-            # of other tiles is selected
             if (not isDrag and common.isInSquare(mouseLoc, tile.position,
                     tile.radius) and
                     common.getDistance(mouseLoc, tile.position) <
                     tile.radius and (selectedTile is None or
                     tiles.index(tile) > tiles.index(selectedTile))):
+                #print("in3")
                 selectedTile = tile
-    # If there has been a left click, a single tile is selected.  If
-    # there has been a right click, a group of snapped tiles is
-    # selected.
     if selectedTile is not None:
-        if myCanvas.isLDown:
+        #print("in3")
+        #self.selectedTile = tile
+        #print(button)
+        isUnSelectOld = True
+        #print(self.isUnSelectOld)
+        if canvas.isLDown:
+            #print(self.selectedTile)
             selectedTiles = [selectedTile]
+            #print("in5")
         else:
+            #print("in4")
+            #self.selectedTile.printGroup()
             selectedTiles = []
             for tile in selectedTile.tileGroup:
                 selectedTiles.append(tile)
+            #self.selectedTiles = self.selectedTile.tileGroup
+        #print(self.selectedTiles, self.selectedTile.tileGroup)
+        #print(self.selectedTiles)
+        #self.selectedTile.mouseOffset = mySub(mouseLoc,
+                #tile.position)
         isDrag = True
         for tile in selectedTile.tileGroup:
             tile.mouseOffset = common.mySub(mouseLoc, tile.position)
-            # The next two lines move all the tiles in a seleted group
-            # of tiles to the top layer of the tiles
+            #Next lines make it so the clicked tile's group gets sent to
+            #the top layer.
+            #print("movetotop")
             tiles.remove(tile)
             tiles.append(tile)
-    return selectedTiles, isDrag, selectedTile
+            #print("in")
+            #tilesToTop.append(tile)
+    return selectedTiles, isDrag, selectedTile, isUnSelectOld
 
-# Recursively groups tiles which are extensionally connected with each
-# other.  Basically the code runs, grouping individual tiles to each
-# other, until there are no more tiles which are next to one of the
-# tiles which is not already a part of the group.
 def addNeighbors(tile, selectedTile):
     for side in tile.sides:
         if (side.isSnapped and side.adjSide.tile is not selectedTile and
@@ -131,149 +187,255 @@ def addNeighbors(tile, selectedTile):
             side.adjSide.tile.tileGroup = tile.tileGroup
             addNeighbors(side.adjSide.tile, selectedTile)
 
-# If two matching sides were found above in this function, this shifts
-# the moving tiles into a snapped position with the nearby tiles
 def snapTiles(selectedTile, snapdSide, adjSide):
+    #foo
     snapdTile = snapdSide.tile
+    #print("in", snapdTile.getSmallRect())
+    #print(self.snapdTile)
     for tile in selectedTile.tileGroup:
-        tile.groupOffset = common.mySub(tile.absPosition,
-                snapdTile.absPosition)
+        if tile is not snapdTile:
+            tile.groupOffset = common.mySub(tile.absPosition,
+                    snapdTile.absPosition)
+        else:
+            tile.groupOffset = (0, 0)
     for tile in selectedTile.tileGroup:
+        #print(self.adjSide.type)
+        #print("in4")
         tile.matchCorner(snapdSide.corner,
                 common.myAdd(adjSide.corner.getAbsPosition(),
                 tile.groupOffset))
+        #tile.absPosition = map(int, map(round, myAdd(mySub(
+                #self.adjSide.corner.getAbsPosition(),
+                #self.snapdSide.corner.offset), tile.groupOffset)))
     snapdTile.adjTile = adjSide.tile
     snapdTile.adjTile.adjTile = snapdTile
     isSnapped = True
+    #foo
+    #print(snapdTile.getSmallRect())
     return isSnapped, snapdTile, snapdSide
 
+    #self.snapdTile.snapdCorner = self.snapdSide.corner
+    #self.snapdTile.adjCorner = self.adjSide.corner
+
+    #self.snapdTile.adjTile.snapdCorner = self.snapdTile.adjCorner
+    #self.snapdTile.adjTile.adjCorner = self.snapdTile.snapdCorner
+
 def unSnapAll(sidesToSnap):
+    #self.noSnapMove(selectedTiles)
+    #print("unsnap2")
     for side in sidesToSnap:
+        #print(side.adjSide)
         side.adjSide.adjSide = None
         side.adjSide = None
     sidesToSnap = []
     snapdTile = None
     isSnapped = False
+    #break
     isConflict = True
     return isSnapped, sidesToSnap, snapdTile, isConflict
 
-# This determines if the two sides could potentially snap, and if so
-# sets snapdSide and adjSide to these two sides, and sets isMatch to
-# True
 def findMatch(sideA, sideB, minDistance, isMatch, snapdSide, adjSide):
-    # This block only runs if the two sides are of the same color, and
-    # also neither side is already snapped to another tile.
     if (sideA.color == sideB.color and
             common.isInSquare(sideA.corner.getPosition(),
             sideB.corner.getPosition(), minDistance) and not sideB.isSnapped):
-        # When this code is run on different combinations of sides, this
-        # code makes sure to only set the closest two compatible sides
-        # as the sides to be used for snapping.
+        #print("in3")
         distance = common.getDistance(sideA.corner.getPosition(),
                 sideB.corner.getPosition())
         if distance < minDistance:
             minDistance = distance
+            #self.snapdTile = tile
             snapdSide = sideA
             adjSide = sideB
             isMatch = True
     return minDistance, isMatch, snapdSide, adjSide
 
-def addAreas(myCanvas, position, areasToCheck, grid, gridRes):
+'''
+def addToPlayGroup(self, tile, tiles):
+    tile.isInPlayGroup = True
+    tileGroup = tiles[len(tiles) - 1].tileGroup
+    tiles[len(tiles) - 1].tileGroup.append(tile)
+    tile.tileGroup = tiles[len(tiles) - 1].tileGroup
+'''
+
+def addAreas(canvas, position, areasToCheck, grid, gridRes):
     for area in getAreasToCheck(position, grid, gridRes):
         if not area in areasToCheck:
             areasToCheck.append(area)
 
-# For updating the scene
-def update(myCanvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
-        isClick, isScrollDown, isScrollUp, grid, gridRes,
-        isDrag, selectedTile, palletBack, isSnapped, sidesToSnap,
-        snapdTile, snapdSide, adjSide, clock, FPS, oldMouseLoc, windowSurface):
-    # oldPositions keeps track of where tiles were before they were moved
+def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
+        isClick, isScrollDown, isScrollUp, isSpace, isArrangeStep, grid, gridRes, groupGrid,
+        arrangeIndex, isArranging, activeRow, isDrag, selectedTile, fromPallet, palletBack,
+        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, 
+        isArrange, oldPlayPosition, isUnSelectOld, snapdSide, adjSide, clock,
+        FPS, oldMouseLoc, windowSurface):
+    #print("grid", self.grid)
+    #print("tick")
+    #oldselectedTiles = []
+    #if len(tiles) > 0:
+        #print("in", tiles[0].position, tiles[0].getSmallRect())
     oldPositions = []
-    # dirtyRects keeps track of parts of the screen that need to be
-    # updated after drawing to the screen
     dirtyRects = []
-    # determines whether either tiles which have been moved should be
-    # re-drawn, or if all of the tiles should be re-drawn
+    toDraws = []
     isDrawClicked = isDrawAll = False
-    # isDrag keeps track of whether or not a tile is being dragged
-    # around by the mouse
+    #foo
+    #print(isArranging)
     if isUnClick:
-        myCanvas.isMouseDown = myCanvas.isLDown = myCanvas.isRDown = \
+        #print("in1")
+        canvas.isMouseDown = canvas.isLDown = canvas.isRDown = \
                 isClick = isDrag = False
+        #isPastClick = False
+    #print(button)
     else:
-        if button == myCanvas.RIGHT:
-            myCanvas.isRDown = True
-            myCanvas.isMouseDown = True
-        elif button == myCanvas.LEFT:
-            myCanvas.isLDown = True
-            myCanvas.isMouseDown = True
-    clock.tick(FPS)
-    # isDeleted is set to true when one or more tiles has been deleted
-    # on the current step
-    isDeleted = False
-    # This function resizes the display if the user is scrolling
-    grid, gridRes, palletBack, isDrawAll = scrollSize(myCanvas, tiles, grid,
-            gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
-            isDrawAll, windowSurface)
-    # This function checks if the user has clicked on the tile pallet.
-    # If so, a tile is chosen from the pallet.  It also checks if the
-    # user has clicked on a tile already on the canvas.  Either way it
-    # sets the mouseOffset attribute for all of the selected tiles, which
-    # hold the distance between the center of the tile and the mouse
-    # location.  Right mouse clicks chose tile groups, left clicks
-    # choose individual tiles.  Generally this gets the tiles ready to be
-    # moved.
-    selectedTiles, isDrawClicked, isDrag, selectedTile, = \
-            checkers.checkClick(myCanvas, mouseLoc, tiles, selectedTiles,
-            isClick, isDrawClicked, isDrag, selectedTile, grid,
-            gridRes)
-    # Checks if the mouse has unclicked, and if so, sets up tile groups
-    # such that any snapped tiles are now in the same group.
-    # Also changes which part of the tile grid they are now a part of.
-    isDrawClicked, selectedTile, isSnapped, sidesToSnap, \
-            snapdTile, snapdSide = checkers.checkUnclick(myCanvas, isUnClick,
-            isClick, tiles, selectedTiles, isDrawClicked, oldPositions,
-            dirtyRects, selectedTile, isSnapped, sidesToSnap,
-            snapdTile, grid, gridRes, snapdSide)
-    # Checks if tiles are currently over the tile pallet, and sets them
-    # to turn red if and only if they are over it.  If there has been an
-    # unclick and the tiles are over the pallet, they are deleted
-    isDeleted = checkers.checkTrash(myCanvas, tiles, selectedTiles,
-            oldPositions, isUnClick, dirtyRects, selectedTile, grid, gridRes,
-            palletBack, isDeleted, windowSurface)
-    #Sets the mouse offset on all the tiles if the background is dragged
-    if not isDrag and isClick:
-        for tile in tiles:
-            tile.mouseOffset = common.mySub(mouseLoc, tile.position)
-    # Things in this block only evaluate if there is both a mouse click,
-    # and mouse movement since the last update
-    if myCanvas.isMouseDown and mouseLoc != oldMouseLoc:
-        # If a tile or tiles is being dragged, this determines where
-        # they should be moved and also snaps or unsnaps them from other
-        # tiles
-        if isDrag:
-            isDrawClicked, isSnapped, sidesToSnap, snapdTile, snapdSide, \
-                    adjSide = movers.moveSome(myCanvas, mouseLoc, tiles,
-                    selectedTiles, oldPositions, isUnClick, dirtyRects,
-                    selectedTile, isSnapped, sidesToSnap, snapdTile,
-                    palletBack, snapdSide, adjSide, grid, gridRes,
-                    windowSurface)
-        # This only evaluates if the background is being dragged and there
-        # are one or more tiles.  It moves all of the movable tiles.
-        elif len(tiles) > 0:
-            isDrawAll = movers.moveAll(myCanvas, mouseLoc, tiles, grid,
-                    gridRes, dirtyRects, isDrawAll, windowSurface)
-    if isDeleted:
-        selectedTile = None
-    # Draws tiles which need to be drawn
+        if button == canvas.RIGHT:
+            canvas.isRDown = True
+            canvas.isMouseDown = True
+        elif button == canvas.LEFT:
+            canvas.isLDown = True
+            canvas.isMouseDown = True
+    if isArranging:
+        arrangeIndex, isDrawClicked, isArrangeStep, isArranging, activeRow, \
+                selectedTiles, selectedTile, isSnapped, sidesToSnap, \
+                snapdtile = arrangers.doArranging(groupGrid, arrangeIndex,
+                mouseLoc, isClick, toDraws, dirtyRects, isDrawClicked,
+                isArrangeStep, isArranging, activeRow, selectedTiles,
+                selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
+                snapdTile, playCopy, oldPlayPosition, isUnSelectOld, tiles)
+    else:
+        clock.tick(FPS)
+        isUnSelectOld = False
+        isDeleted = False
+        #self.isDraw = False
+        #dirtyRects = []
+        #'''
+        #print(self.isMouseDown, isScrollDown, isScrollUp, isUnClick)
+        #print(isScrollDown, isScrollUp)
+        grid, gridRes, palletBack, isDrawAll = scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollUp,
+                dirtyRects, isDrawAll, windowSurface)
+        #areasToCheck = self.getAreasToCheck(mouseLoc)
+        #print(areasToCheck)
+        #backTiles = []
+        #isPlayMove = False
+        selectedTiles, isDrawClicked, isDrag, selectedTile, fromPallet, \
+                playCopy, isUnSelectOld = checkers.checkClick(canvas, mouseLoc, tiles,
+                selectedTiles, isClick, isDrawClicked, isDrag, selectedTile,
+                fromPallet, playCopy, grid, gridRes, isUnSelectOld)
+        #foo
+        #print("in5", self.playCopy)
+            #self.toCheckSnaps = tiles[:-len(self.selectedTile.tilegroup)]
+        #print(self.selectedTile)
+        #oldPositions = []
+        isDrawClicked, selectedTile, fromPallet, oldselectedTiles, isSnapped, \
+                sidesToSnap, snapdTile, playCopy, isArrange, snapdSide = \
+                checkers.checkUnclick(canvas, isUnClick, isClick, tiles,
+                selectedTiles, isDrawClicked, oldPositions, dirtyRects,
+                selectedTile, fromPallet, oldselectedTiles, isSnapped,
+                sidesToSnap, snapdTile, playCopy, grid, gridRes, isArrange, oldPlayPosition,
+                isUnSelectOld, snapdSide)
+        #'''
+        #if isSpace:
+            #self.isArranging = not self.isArranging
+        #foo
+        '''
+        if self.selectedTile is not None:
+            print(len(self.selectedTiles))
+            for tile in self.selectedTiles:
+                print(tile)
+        '''
+        isDeleted = checkers.checkTrash(canvas, tiles, selectedTiles,
+                oldPositions, isUnClick, dirtyRects, selectedTile,
+                oldselectedTiles, playCopy, grid, gridRes, palletBack, isUnSelectOld, isDeleted,
+                windowSurface)
+        #Set mouse offset if drag background 
+        if not isDrag and isClick:
+            #print("in5")
+            for tile in tiles:
+                tile.mouseOffset = common.mySub(mouseLoc, tile.position)
+        #print(isClicked, isUnClick)
+        #print(self.isDrag)
+        '''
+        if self.selectedTile is None:
+            print("None")
+        else:
+            print(self.selectedTile.position)
+        '''
+        #print(self.selectedTile)
+        #print("in ", self.isUnSelectOld)
+        #print(mouseLoc, self.oldMouseLoc)
+        #print("ismousedown ", self.isMouseDown, not mouseLoc == self.oldMouseLoc)
+        #print("in")
+        if canvas.isMouseDown and mouseLoc != oldMouseLoc:
+            #print("in6")
+            #self.toGrid(self.selectedTile, self.cornerGrid, WIDTH, HEIGHT,
+                    #self.gridRes)
+            #print(self.selectedTile)
+            #foo
+            #print("in3", isDrag)
+            if isDrag:
+                #print("in")
+                #isDrawClicked = True
+                #foo
+                #print("playcopy", self.playCopy)
+                if playCopy is not None:
+                    isDrawClicked, activeRow, selectedTile, oldselectedTiles, \
+                            oldPlayPosition, isUnSelectOld = \
+                            movers.movePlayIcon(canvas, dirtyRects, tiles,
+                            activeRow, selectedTile, oldselectedTiles,
+                            playCopy, isUnSelectOld)
+                    #if isUnClick:
+                        #foo
+                        #print("in2")
+                        #self.playCopy = None
+                    #foo
+                    #print("in", selectedTile)
+                else:
+                    #foo
+                    #print("in2", selectedTiles)
+                    isDrawClicked, oldselectedTiles, isSnapped, sidesToSnap, \
+                            snapdTile, isUnSelectOld, snapdSide, adjSide = \
+                            movers.moveSome(canvas, mouseLoc, tiles,
+                            selectedTiles, oldPositions, isUnClick, dirtyRects,
+                            selectedTile, oldselectedTiles, isSnapped,
+                            sidesToSnap, snapdTile, palletBack, isUnSelectOld, snapdSide,
+                            adjSide, grid, gridRes, isArranging, windowSurface)
+                #foo
+                #print("in", isDrawClicked)
+            #Move all tiles if dragging background
+            elif (len(tiles) > 0 and
+                    tiles[-1].mouseOffset is not None):
+                #foo
+                #print("in2")
+                isDrawAll = tryMoveAll(canvas, tiles, grid, gridRes, dirtyRects, isDrawAll)
+                    #print("in")
+            #print(self.isDrawClicked)
+            #print(self.isDrawClicked)
+            #if self.isUnSelectOld == True:
+            #print("in")
+        if isDeleted:
+            selectedTile = None
+        groupGrid, arrangeIndex, isArranging, activeRow, isArrange = \
+                checkers.checkArrangeInit(canvas, isArranging, arrangeIndex,
+                activeRow, selectedTile, isArrange, groupGrid, tiles)
+    #'''
+    #if self.selectedTile is not None:
+        #print("isSnapped", self.selectedTile.isSnapped)
+    #print("in2", self.isLDown, self.selectedTile)
     if isDrawClicked or isDrawAll:
-        drawers.draw(myCanvas, tiles, oldPositions, isUnClick,
-                dirtyRects, isDrawClicked, isDrawAll, selectedTile, palletBack,
-                grid, gridRes, windowSurface)
+        #print("in6", isDrawClicked)
+        drawers.draw(canvas, tiles, oldPositions, isUnClick, toDraws,
+                dirtyRects, isArrangeStep, isDrawClicked, isDrawAll,
+                selectedTile, oldselectedTiles, playCopy, palletBack, grid, gridRes, isUnSelectOld,
+                windowSurface)
+    #self.oldselectedTiles = []
+    #TODO: These next two lines MAY be problematic.
+    #TODO: It MAY be better to move this to earlier in the program.
     if isUnClick:
+        #print("in")
         selectedTile = None
     oldMouseLoc = mouseLoc
-    return (selectedTiles, grid, gridRes, isDrag, selectedTile,
-            palletBack, isSnapped, sidesToSnap, snapdTile,
-            snapdSide, adjSide, oldMouseLoc)
+    if playCopy is not None:
+        playCopy.oldRect = playCopy.getRect()
+    return (selectedTiles, isArrangeStep, grid, gridRes, groupGrid, arrangeIndex,
+            isArranging, activeRow, isDrag, selectedTile, fromPallet, palletBack,
+            oldselectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy,
+            isArrange, oldPlayPosition, isUnSelectOld, snapdSide, adjSide,
+            oldMouseLoc)
