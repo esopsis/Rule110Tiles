@@ -103,8 +103,9 @@ def checkTrash(canvas, tiles, selectedTiles, oldPositions, isUnClick,
 
 def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
         isDrawClicked, oldPositions, dirtyRects, selectedTile, fromPallet,
-        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, grid, gridRes,
-        isArrange, oldPlayPosition, isUnSelectOld, snapdSide):
+        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, grid,
+        gridRes, isArrange, oldPlayPosition, isUnSelectOld, snapdSide,
+        mouseLoc):
     if isUnClick and not isClick:
         '''
         if(isinstance(self.fromPallet, Tile) and
@@ -162,9 +163,10 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
             pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
                     canvas.playIcon.getRect())
             dirtyRects.append(canvas.playIcon.getRect())
-            drawers.drawNearTiles([playCopy, canvas.playIcon], tiles,
-                    oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
-                    gridRes, isUnSelectOld)
+            drawers.drawNearTiles(canvas, [playCopy,
+                    canvas.playIcon], tiles, oldPlayPosition, dirtyRects,
+                    oldselectedTiles, playCopy, grid, gridRes, isUnSelectOld,
+                    canvas.windowSurface)
             playCopy = None
             isDrawClicked = True
             offset = (-canvas.playIcon.getRect().width *
@@ -264,8 +266,9 @@ def checkBorders(tiles):
                 return isConflict
     return isConflict
 
-def checkBordersSnap(canvas, mouseLoc, tilesToSnap, checkedTiles, grid, gridRes, isDragging,
-        isSnapped, sidesToSnap, snapdTile, isArranging, selectedTiles):
+def checkBordersSnap(canvas, mouseLoc, tilesToSnap, checkedTiles, grid,
+        gridRes, isDragging, isSnapped, sidesToSnap, snapdTile, isArranging,
+        selectedTiles):
     #foo
     #print("checkingBorders")
     #print("in3")
@@ -341,66 +344,4 @@ def checkClick(canvas, mouseLoc, tiles, selectedTiles, isClick,
     return (selectedTiles, isDrawClicked, isDrag, selectedTile, fromPallet,
             playCopy, isUnSelectOld)
 
-def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
-        selectedTile, isArrange, groupGrid, tiles):
-    if isArrange:
-        '''
-        self.activeTileRow = []
-        for tile in tiles:
-            self.activeTileRow.append(tile)
-        '''
-        #foo
-        #print("in", selectedTile.tileGroup)
-        groupGrid = GroupGrid(selectedTile.tileGroup)
-        for tile in selectedTile.tileGroup:
-            tiles.remove(tile)
-            tiles.append(tile)
-            tile.isToPlay = False
-            tile.isInPlayGroup = True
-        activeRow = groupGrid.grid[0]
-        #print(activeRow)
-        #self.activeTileRow = self.groupGrid[len(self.groupGrid) - 1]
-        #print(groupGrid)
-        #self.activeBinRow = [0, 0]
-        #for tile in activeRow[0].tileGroup:
-            #tile.isToPlay = False
-            #tile.isInPlayGroup = True
-        '''
-        for tile in self.activeTileRow:
-            #tile.isToPlay = False
-            if tile.image == TileSet.w:
-                self.activeBinRow.append(0)
-            else:
-                self.activeBinRow.append(1)
-        '''
-        isArranging = True
-        #self.activeBinRow.append(0)
-        canvas.playIcon.setPause()
-        #self.playIcon.image = pygame.transform.smoothscale(
-                #self.pauseImage, (self.playIcon.image.get_width(),
-                #self.playIcon.image.get_height()))
-        isArrange = False
-        #foo
-        #print("in", self.groupGrid)
-        arrangeIndex = 1
-    return groupGrid, arrangeIndex, isArranging, activeRow, isArrange
 
-def checkPause(canvas, mouseLoc, tiles, oldPlayPosition, dirtyRects,
-        oldselectedTiles, playCopy, grid, isUnSelectOld, isDrawClicked,
-        isArrangeStep, isArranging, activeRow, isMouseDown):
-    if isMouseDown:
-        if canvas.playIcon.getRect().collidepoint(mouseLoc):
-            #foo
-            canvas.playIcon.setPlay()
-            pygame.draw.rect(windowSurface, Canvas.BACK_COLOR,
-                canvas.playIcon.getRect())
-            dirtyRects.append(canvas.playIcon.getRect())
-            drawers.drawNearTiles([myCangas.playIcon], tiles,
-                    oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
-                    gridRes, isUnSelectOld)
-            if len(activeRow) > 0:
-                for tile in activeRow[-1].tileGroup:
-                    tile.isInPlayGroup = False
-            isDrawClicked = True
-            isArrangeStep = isArranging = False
-    return isDrawClicked, isArrangeStep, isArranging

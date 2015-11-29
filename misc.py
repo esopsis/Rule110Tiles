@@ -7,6 +7,7 @@ import common
 import checkers
 import drawers
 import movers
+import arrangers
 
 def load(image):
     return common.load(os.path.join("images", image))
@@ -295,7 +296,7 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
     if isArranging:
         arrangeIndex, isDrawClicked, isArrangeStep, isArranging, activeRow, \
                 selectedTiles, selectedTile, isSnapped, sidesToSnap, \
-                snapdtile = arrangers.doArranging(groupGrid, arrangeIndex,
+                snapdtile = arrangers.doArranging(canvas, grid, groupGrid, arrangeIndex,
                 mouseLoc, isClick, toDraws, dirtyRects, isDrawClicked,
                 isArrangeStep, isArranging, activeRow, selectedTiles,
                 selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
@@ -330,7 +331,7 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
                 selectedTiles, isDrawClicked, oldPositions, dirtyRects,
                 selectedTile, fromPallet, oldselectedTiles, isSnapped,
                 sidesToSnap, snapdTile, playCopy, grid, gridRes, isArrange, oldPlayPosition,
-                isUnSelectOld, snapdSide)
+                isUnSelectOld, snapdSide, mouseLoc)
         #'''
         #if isSpace:
             #self.isArranging = not self.isArranging
@@ -380,7 +381,7 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
                             oldPlayPosition, isUnSelectOld = \
                             movers.movePlayIcon(canvas, dirtyRects, tiles,
                             activeRow, selectedTile, oldselectedTiles,
-                            playCopy, isUnSelectOld)
+                            playCopy, isUnSelectOld, mouseLoc)
                     #if isUnClick:
                         #foo
                         #print("in2")
@@ -413,7 +414,7 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         if isDeleted:
             selectedTile = None
         groupGrid, arrangeIndex, isArranging, activeRow, isArrange = \
-                checkers.checkArrangeInit(canvas, isArranging, arrangeIndex,
+                arrangers.checkArrangeInit(canvas, arrangeIndex, isArranging,
                 activeRow, selectedTile, isArrange, groupGrid, tiles)
     #'''
     #if self.selectedTile is not None:

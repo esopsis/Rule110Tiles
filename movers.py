@@ -213,8 +213,8 @@ def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
             isUnSelectOld, snapdSide, adjSide)
 
 def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
-        oldselectedTiles, playCopy, isUnSelectOld):
-    pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
+        oldselectedTiles, playCopy, isUnSelectOld, mouseLoc):
+    pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
             playCopy.getRect())
     dirtyRects.append(playCopy.getRect())
     oldPlayPosition = [playCopy.position]
@@ -226,7 +226,7 @@ def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
     for tile in reversed(tiles):
         #if tile.getSmallRect().collidepoint(myAdd(mouseLoc,
                 #(self.playIcon.image.get_width() / 2, 0))):
-        if isInSquare(playPoint, tile.position, minDist):
+        if common.isInSquare(playPoint, tile.position, minDist):
             distance = common.getDistance(playPoint, tile.position)
             if distance < minDist:
                 minDist = distance

@@ -1,6 +1,11 @@
+import pygame
+import common
+import objects
+import checkers
+
 #TODO: change self.grid to grid
-def checkArrangeInit(self, arrangeIndex, isArranging, activeRow,
-        clickedTile, isArrange, groupGrid, tiles):
+def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
+        selectedTile, isArrange, groupGrid, tiles):
     if isArrange:
         '''
         self.activeTileRow = []
@@ -8,9 +13,9 @@ def checkArrangeInit(self, arrangeIndex, isArranging, activeRow,
             self.activeTileRow.append(tile)
         '''
         #foo
-        #print("in", clickedTile.tileGroup)
-        groupGrid = GroupGrid(clickedTile.tileGroup)
-        for tile in clickedTile.tileGroup:
+        #print("in", selectedTile.tileGroup)
+        groupGrid = objects.GroupGrid(selectedTile.tileGroup)
+        for tile in selectedTile.tileGroup:
             tiles.remove(tile)
             tiles.append(tile)
             tile.isToPlay = False
@@ -33,7 +38,7 @@ def checkArrangeInit(self, arrangeIndex, isArranging, activeRow,
         '''
         isArranging = True
         #self.activeBinRow.append(0)
-        self.playIcon.setPause()
+        canvas.playIcon.setPause()
         #self.playIcon.image = pygame.transform.smoothscale(
                 #self.pauseImage, (self.playIcon.image.get_width(),
                 #self.playIcon.image.get_height()))
@@ -43,48 +48,68 @@ def checkArrangeInit(self, arrangeIndex, isArranging, activeRow,
         arrangeIndex = 1
     return groupGrid, arrangeIndex, isArranging, activeRow, isArrange
 
+def checkPause(canvas, mouseLoc, tiles, oldPlayPosition, dirtyRects,
+        oldselectedTiles, playCopy, grid, isUnSelectOld, isDrawClicked,
+        isArrangeStep, isArranging, activeRow):
+    if canvas.isMouseDown:
+        if canvas.playIcon.getRect().collidepoint(mouseLoc):
+            #foo
+            canvas.playIcon.setPlay()
+            pygame.draw.rect(windowSurface, Canvas.BACK_COLOR,
+                canvas.playIcon.getRect())
+            dirtyRects.append(canvas.playIcon.getRect())
+            drawers.drawNearTiles([canvas.playIcon], tiles,
+                    oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
+                    gridRes, isUnSelectOld)
+            if len(activeRow) > 0:
+                for tile in activeRow[-1].tileGroup:
+                    tile.isInPlayGroup = False
+            isDrawClicked = True
+            isArrangeStep = isArranging = False
+    return isDrawClicked, isArrangeStep, isArranging
+
     #TODO: delete functions?
-def isSideLoop(self, lOrR, offset, activeRow):
+def isSideLoop(lOrR, offset, activeRow):
     if lOrR == "left":
         sign = -1
         i = 0
     elif lOrR == "right":
         sign = 1
         i = len(activeRow) - 1
-    offsetPosition = x(activeRow[i].position) + \
+    offsetPosition = canvas.x(activeRow[i].position) + \
             sign * activeRow[i].getSmallRect().width * offset
     if lOrR == "left":
         return offsetPosition < 0
     elif lOrR == "right":
         return offsetPosition > WIDTH
 
-def checkBordersAdd(self, tile, checkedTiles, tileGroup, clickedTiles,
-        clickedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
+def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
+        selectedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
         isArranging):
-    isSnapped, sidesToSnap, snapdTile, isConflict = self.checkBordersSnap(
-            [tile], checkedTiles, False, isSnapped, sidesToSnap, snapdTile,
-            isArranging)
+    isSnapped, sidesToSnap, snapdTile, isConflict = checkers.checkBordersSnap(
+            canvas, None, [tile], checkedTiles, grid, gridRes, False,
+            isSnapped, sidesToSnap, snapdTile, isArranging, selectedTiles)
     if isConflict:
-        tile.setImage(TileSet.w)
-        tile.scaleImage(Canvas.scale)
-    isSnapped, sidesToSnap, snapdTile, isConflict = self.checkBordersSnap(
-            [tile], checkedTiles, False, isSnapped, sidesToSnap, snapdTile,
-            isArranging)
+        tile.setImage(objects.TileSet.w)
+        tile.scaleImage(objects.Canvas.scale)
+    isSnapped, sidesToSnap, snapdTile, isConflict = checkers.checkBordersSnap(
+            canvas, None, [tile], checkedTiles, grid, gridRes, False,
+            isSnapped, sidesToSnap, snapdTile, isArranging, selectedTiles)
     #foo
     #print(isConflict)
     if isConflict:
         #if tile.gridRow is not None:
             #self.grid[tile.gridRow][tile.gridCol].remove(tile)
         #tiles.pop()
-        clickedTile = None
-        clickedTiles = []
+        selectedTile = None
+        selectedTiles = []
         #toDraws.pop()
     else:
         #foo
         #if tile.image is TileSet.rYB:
             #print("in")
         tiles.append(tile)
-        self.toGrid(tile, self.grid, self.gridRes)
+        misc.toGrid(tile, self.grid, self.gridRes)
         toDraws.append(tile)
         #self.addToPlayGroup(tile, tiles)
         #'''
@@ -99,11 +124,11 @@ def checkBordersAdd(self, tile, checkedTiles, tileGroup, clickedTiles,
         tileGroup.append(tile)
         tile.tileGroup = tileGroup
         #'''
-    return isConflict, isSnapped, sidesToSnap, snapdTile, clickedTile, \
-            clickedTiles
+    return isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
+            selectedTiles
 
-def tryConnectNewTile(self, side, adjSide, toDraws, clickedTiles,
-        clickedTile, isSnapped, sidesToSnap, snapdTile, tiles,
+def tryConnectNewTile(canvas, side, adjSide, toDraws, selectedTiles,
+        selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
         isArranging):
     #print("in", tiles)
     isConflict = False
@@ -113,15 +138,15 @@ def tryConnectNewTile(self, side, adjSide, toDraws, clickedTiles,
         tile = side.corner.tile
         #tiles.append(tile)
         tile.matchCorner(side.corner, adjSide.corner.getAbsPosition())
-        tile.scalePosition(Canvas.scale)
+        tile.scalePosition(objects.Canvas.scale)
         #self.toGrid(tile, self.grid, self.gridRes)
-        clickedTile = tile
-        clickedTiles = [clickedTile]
+        selectedTile = tile
+        selectedTiles = [selectedTile]
         #toDraws.append(tile)
         checkedTiles = []
-        isConflict, isSnapped, sidesToSnap, snapdTile, clickedTile, \
-                clickedTiles = self.checkBordersAdd(tile, checkedTiles,
-                adjSide.tile.tileGroup, clickedTiles, clickedTile,
+        isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
+                selectedTiles = checkBordersAdd(canvas, tile, checkedTiles,
+                adjSide.tile.tileGroup, selectedTiles, selectedTile,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
                 isArranging)
         #foo
@@ -130,11 +155,11 @@ def tryConnectNewTile(self, side, adjSide, toDraws, clickedTiles,
         #print(isConflict)
         #print(sidesToSnap)
     #print("in", tiles)
-    return (isConflict, clickedTiles, clickedTile, isSnapped, sidesToSnap,
+    return (isConflict, selectedTiles, selectedTile, isSnapped, sidesToSnap,
             snapdTile)
 
-def objectToBin(self, myObject):
-    if myObject is None or myObject.image is TileSet.w:
+def objectToBin(myObject):
+    if myObject is None or myObject.image is objects.TileSet.w:
         return 0
     return 1
     
@@ -149,50 +174,50 @@ def objectToBin(self, array, i):
         return DEFAULT
     return 1
 '''
-def objectToBin(self, myObject):
+def objectToBin(myObject):
     if myObject is None or myObject.binary == 0:
         return 0
     elif myObject.binary == 1:
         return 1
 
-def getEnd(self, array):
+def getEnd(array):
     for i in reversed(range(len(array))):
         if array[i] is not None:
             return i
 
-def removeWhiteEnds(self, activeRow):
-    end = self.getEnd(activeRow)
+def removeWhiteEnds(activeRow):
+    end = getEnd(activeRow)
     for i in range(end + 1):
         if activeRow[i] is not None:
             return(activeRow[i:end + 1])
 
-def checkAddLeft(self, activeRow, toDraws, clickedTiles, clickedTile,
+def checkAddLeft(canvas, activeRow, toDraws, selectedTiles, selectedTile,
         isSnapped, sidesToSnap, snapdTile, tiles, isArranging):
     #print("in")
     #print("in", activeRow)
     isConflict = False
-    end = self.getEnd(activeRow)
+    end = getEnd(activeRow)
     for i in range(end + 1):
         myObject = activeRow[i]
         #TODO: my object is not none instead for next line?
         if isinstance(myObject, Tile):
             newTile = None
             #TODO: set image instead of tile?
-            if myObject.image is TileSet.bY:
-                newTile = Tile(TileSet.rYB)
-            elif (myObject.image is TileSet.rB or myObject.image is
-                    TileSet.bR):
-                newTile = Tile(TileSet.y)
+            if myObject.image is objects.TileSet.bY:
+                newTile = objects.Tile(objects.TileSet.rYB)
+            elif (myObject.image is objects.TileSet.rB or myObject.image is
+                    objects.TileSet.bR):
+                newTile = objects.Tile(objects.TileSet.y)
             start = i
             if newTile is not None:
                 #foo
                 #print("in")
                 #print("activerow", activeRow)
-                isConflict, clickedTiles, clickedTile, isSnapped, \
-                        sidesToSnap, snapdTile = self.tryConnectNewTile(
+                isConflict, selectedTiles, selectedTile, isSnapped, \
+                        sidesToSnap, snapdTile = tryConnectNewTile(canvas, 
                         newTile.upperRight.rightSide,
                         myObject.upperLeft.leftSide, toDraws,
-                        clickedTiles, clickedTile, isSnapped, sidesToSnap,
+                        selectedTiles, selectedTile, isSnapped, sidesToSnap,
                         snapdTile, tiles, isArranging)
                 #foo
                 #print("lefttile", sidesToSnap)
@@ -200,16 +225,16 @@ def checkAddLeft(self, activeRow, toDraws, clickedTiles, clickedTile,
                 #foo
                 #print("isConflict")
                 if isConflict:
-                    if newTile.image is TileSet.y:
-                        image = TileSet.rYB
-                    elif newTile.image is TileSet.rYB:
-                        image = TileSet.y
+                    if newTile.image is objects.TileSet.y:
+                        image = objects.TileSet.rYB
+                    elif newTile.image is objects.TileSet.rYB:
+                        image = objects.TileSet.y
                     #print("in", image is TileSet.y)
-                    isConflict, clickedTiles, clickedTile, isSnapped, \
-                        sidesToSnap, snapdTile = self.tryConnectNewTile(
-                        Tile(image).upperRight.rightSide,
+                    isConflict, selectedTiles, selectedTile, isSnapped, \
+                        sidesToSnap, snapdTile = tryConnectNewTile(canvas,
+                        objects.Tile(image).upperRight.rightSide,
                         myObject.upperLeft.leftSide, toDraws,
-                        clickedTiles, clickedTile, isSnapped, sidesToSnap,
+                        selectedTiles, selectedTile, isSnapped, sidesToSnap,
                         snapdTile, tiles, isArranging)
                     #foo
                     #print("in", isConflict)
@@ -233,58 +258,59 @@ def checkAddLeft(self, activeRow, toDraws, clickedTiles, clickedTile,
     #for j in range(i, end + 1):
         #activeRow.append(activeRowTemp[j])
     activeRow = activeRow[start:end + 1]
-    return (isConflict, activeRow, clickedTiles, clickedTile, isSnapped,
+    return (isConflict, activeRow, selectedTiles, selectedTile, isSnapped,
             sidesToSnap, snapdTile)
 
-def checkAddRight(self, myObject, newTile):
-    if (myObject.image is TileSet.bY or myObject.image is TileSet.y or
-            myObject.image is TileSet.bR or myObject.image is TileSet.rYB):
-        newTile = Tile(TileSet.rB)
+def checkAddRight(myObject, newTile):
+    if (myObject.image is objects.TileSet.bY or myObject.image is objects.TileSet.y or
+            myObject.image is objects.TileSet.bR or myObject.image is objects.TileSet.rYB):
+        newTile = objects.Tile(objects.TileSet.rB)
     return newTile
 
-def checkMerge(self, myObject, activeRow, i, toDraws):
-    if ((myObject.image is TileSet.rY or myObject.image is TileSet.rB) and
+def checkMerge(myObject, activeRow, i, toDraws):
+    if ((myObject.image is objects.TileSet.rY or myObject.image is
+            objects.TileSet.rB) and
             i + 1 < len(activeRow) and activeRow[i + 1] is not None and
-            (activeRow[i + 1].image is TileSet.y or
-            activeRow[i + 1].image is TileSet.rYB or
-            activeRow[i + 1].image is TileSet.rY)):
+            (activeRow[i + 1].image is objects.TileSet.y or
+            activeRow[i + 1].image is objects.TileSet.rYB or
+            activeRow[i + 1].image is objects.TileSet.rY)):
         tileA = tileB = None
-        if myObject.image is TileSet.rY:
+        if myObject.image is objects.TileSet.rY:
             #foo
             #print("in")
             myObject.oldImage = myObject.image
             myObject.oldScaledImage = myObject.scaledImage
-            myObject.setImage(TileSet.rYB)
+            myObject.setImage(objects.TileSet.rYB)
             tileA = myObject
             #toDraws.append(myObject)
-        elif myObject.image is TileSet.rB:
+        elif myObject.image is objects.TileSet.rB:
             myObject.oldImage = myObject.image
             myObject.oldScaledImage = myObject.scaledImage
-            myObject.setImage(TileSet.bR)
+            myObject.setImage(objects.TileSet.bR)
             tileA = myObject
             #toDraws.append(myObject)
         if activeRow[i + 1].image is TileSet.y:
             activeRow[i + 1].oldImage = myObject.image
             activeRow[i + 1].oldScaledImage = myObject.scaledImage
-            activeRow[i + 1].setImage(TileSet.bY)
+            activeRow[i + 1].setImage(objects.TileSet.bY)
             tileB = activeRow[i + 1]
             #toDraws.append(self.activeRow[j + 1])
-        elif activeRow[i + 1].image is TileSet.rYB:
+        elif activeRow[i + 1].image is objects.TileSet.rYB:
             activeRow[i + 1].oldImage = myObject.image
             activeRow[i + 1].oldScaledImage = myObject.scaledImage
-            activeRow[i + 1].setImage(TileSet.bR)
+            activeRow[i + 1].setImage(objects.TileSet.bR)
             tileB = activeRow[i + 1]
             #toDraws.append(self.activeRow[j + 1])
-        elif activeRow[i + 1].image is TileSet.rY:
+        elif activeRow[i + 1].image is objects.TileSet.rY:
             activeRow[i + 1].oldImage = myObject.image
             activeRow[i + 1].oldScaledImage = myObject.scaledImage
-            activeRow[i + 1].setImage(TileSet.rB)
+            activeRow[i + 1].setImage(objects.TileSet.rB)
             tileB = activeRow[i + 1]
             #toDraws.append(self.activeRow[j + 1])
-        toDraws = self.tryFinishSetImages([tileA, tileB], toDraws)
+        toDraws = tryFinishSetImages([tileA, tileB], toDraws)
     return toDraws
 
-def generateRow(self, activeRow, arrangeIndex, groupGrid):
+def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
     #foo
     #print("arrangein", arrangeIndex)
     #TODO: only do this if there isn't already a tile in the position!!
@@ -294,15 +320,15 @@ def generateRow(self, activeRow, arrangeIndex, groupGrid):
     #foo
     #print("in2")
     for i in range(len(activeRow) + 1):
-        leftObject = getOrDefault(activeRow, i - 2, None)
-        leftBin = self.objectToBin(leftObject)
-        centerObject = getOrDefault(activeRow, i - 1, None)
-        centerBin = self.objectToBin(centerObject)
-        rightObject = getOrDefault(activeRow, i, None)
-        rightBin = self.objectToBin(rightObject)
+        leftObject = common.getOrDefault(activeRow, i - 2, None)
+        leftBin = objectToBin(leftObject)
+        centerObject = common.getOrDefault(activeRow, i - 1, None)
+        centerBin = objectToBin(centerObject)
+        rightObject = common.getOrDefault(activeRow, i, None)
+        rightBin = objectToBin(rightObject)
         #foo
         #print(leftBin, centerBin, rightBin)
-        newBin = (self.rules["".join(map(str, [leftBin, centerBin,
+        newBin = (canvas.rules["".join(map(str, [leftBin, centerBin,
                 rightBin]))])
         #print(newBin)
         newTile = None
@@ -310,12 +336,12 @@ def generateRow(self, activeRow, arrangeIndex, groupGrid):
                 rightObject is None):
             if centerObject is None:
                 if rightObject is not None:
-                    newTile = Tile()
+                    newTile = objects.Tile(canvas)
                     newTile.binary = newBin
                     newTile.matchCorner(newTile.upperRight,
                             rightObject.lower.getAbsPosition())
             else:
-                newTile = Tile()
+                newTile = objects.Tile(canvas)
                 newTile.binary = newBin
                 newTile.matchCorner(newTile.upperLeft,
                         centerObject.lower.getAbsPosition())
@@ -324,7 +350,7 @@ def generateRow(self, activeRow, arrangeIndex, groupGrid):
             if newTile is not None:
                 if isInGroupGrid:
                     xIndex = groupGrid.getTileIndex("x",
-                            x(newTile.absPosition))
+                            common.x(newTile.absPosition))
                     if xIndex < 0:
                         leftTiles.append(newTile)
                     elif xIndex >= len(groupGrid.grid[arrangeIndex]):
@@ -355,7 +381,7 @@ def generateRow(self, activeRow, arrangeIndex, groupGrid):
     #print("newrow", newRow)
     return newRow, arrangeIndex
 
-def setColor(self, newRow, tileIndex, activeRow, clickedTiles, clickedTile,
+def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         isSnapped, sidesToSnap, snapdTile, toDraws, tiles, isArranging):
     #print(newRow, tileIndex)
     centerObject = newRow[tileIndex]
@@ -371,20 +397,20 @@ def setColor(self, newRow, tileIndex, activeRow, clickedTiles, clickedTile,
             centerObject.image is TileSet.bR):
         isRight = True
     '''
-    centerBin = self.objectToBin(centerObject)
+    centerBin = objectToBin(centerObject)
     if tileIndex >= 1:
-        leftBin = self.objectToBin(newRow[tileIndex - 1])
+        leftBin = objectToBin(newRow[tileIndex - 1])
     else:
         leftBin = 0
     if tileIndex < len(newRow) - 1:
-        rightBin = self.objectToBin(newRow[tileIndex + 1])
+        rightBin = objectToBin(newRow[tileIndex + 1])
     else:
         rightBin = 0
     adjSide = centerObject.upperLeft.rightSide.adjSide
     if adjSide is None:
         topBin = 0
     else:
-        topBin = self.objectToBin(adjSide.tile)
+        topBin = objectToBin(adjSide.tile)
     #print(leftBin, centerBin, rightBin)
     #TODO: change equals's to is's
     image = None
@@ -394,57 +420,57 @@ def setColor(self, newRow, tileIndex, activeRow, clickedTiles, clickedTile,
                 if topBin:
                     #if tileIndex >= 1:
                         #print(newRow[tileIndex + 1])
-                    image = TileSet.bR
+                    image = objects.TileSet.bR
                 else:
-                    image = TileSet.bY
+                    image = objects.TileSet.bY
             else:
                 #if i == len(newRow) - 1:
                 #foo
                 #print(isEnd, isRight)
-                image = TileSet.rB
+                image = objects.TileSet.rB
         else:
             if rightBin:
                 if topBin:
-                    image = TileSet.rYB
+                    image = objects.TileSet.rYB
                 else:
-                    image = TileSet.y
+                    image = objects.TileSet.y
             else:
-                image = TileSet.rY
+                image = objects.TileSet.rY
     else:
-        image = TileSet.w
+        image = objects.TileSet.w
     #print(sidesToSnap)
     #Next few lines necessary?
     if image is not None:
         #if centerObject.isSnapped:
         isConflict = False
         #'''
-        if centerObject.image is not Tile.delTile:
+        if centerObject.image is not objects.Tile.delTile:
             #foo
             #print("in")
             #TODO: if image is not centerObject.image:
             oldImage = centerObject.image
-            if not (oldImage is TileSet.bR and image is TileSet.bY):
+            if not (oldImage is objects.TileSet.bR and image is objects.TileSet.bY):
                 oldScaledImage = centerObject.scaledImage
                 centerObject.setImage(image)
                 #isConflict = False
-                isConflict = self.checkBorders([centerObject])
+                isConflict = checkers.checkBorders([centerObject])
                 if isConflict:
                     centerObject.setImage(oldImage)
                     centerObject.scaledImage = oldScaledImage
                 else:
-                    centerObject.scaleImage(Canvas.scale)
+                    centerObject.scaleImage(objects.Canvas.scale)
                     toDraws.append(centerObject)
         #'''
         #if centerObject.image is Tile.delTile:
         centerObject.setImage(image)
-        centerObject.scaleImage(Canvas.scale)
+        centerObject.scaleImage(objects.Canvas.scale)
         #'''
         #print("in", sidesToSnap)
         #fooo
         #print(activeRow)
-        isConflict, isSnapped, sidesToSnap, snapdTile, clickedTile, \
-                clickedTiles = self.checkBordersAdd(centerObject, [],
-                activeRow[-1].tileGroup, clickedTiles, clickedTile,
+        isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
+                selectedTiles = checkBordersAdd(canvas, centerObject, [],
+                activeRow[-1].tileGroup, selectedTiles, selectedTile,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
                 isArranging)
         #print(sidesToSnap)
@@ -456,7 +482,7 @@ def setColor(self, newRow, tileIndex, activeRow, clickedTiles, clickedTile,
             #print(newRow)
         #else:
             #self.addToPlayGroup(centerObject, activeRow)
-    return isConflict, clickedTile, clickedTiles
+    return isConflict, selectedTile, selectedTiles
 
 '''
 def trySetColor(self):
@@ -468,7 +494,7 @@ def trySetColor(self):
     if isConflict:
 '''
 
-def setColors(self, newRow, clickedTiles, clickedTile, isSnapped,
+def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         sidesToSnap, snapdTile, toDraws, tiles, isArranging, activeRow):
     indecesToCheck = []
     #foo
@@ -476,11 +502,11 @@ def setColors(self, newRow, clickedTiles, clickedTile, isSnapped,
     for i in range(len(newRow)):
         #move next line down into line after that
         centerObject = newRow[i]
-        if centerObject.image is Tile.delTile:
+        if centerObject.image is objects.Tile.delTile:
             #foo
             #print("in2", newRow)
-            isConflict, clickedTile, clickedTiles = self.setColor(newRow,
-                    i, activeRow, clickedTiles, clickedTile, isSnapped,
+            isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
+                    i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isArranging)
             #foo
             #print("in3", newRow)
@@ -505,8 +531,8 @@ def setColors(self, newRow, clickedTiles, clickedTile, isSnapped,
     #print(neighborIndeces)
     for i in set(neighborIndeces):
         if newRow[i] is not None:
-            isConflict, clickedTile, clickedTiles = self.setColor(newRow,
-                    i, activeRow, clickedTiles, clickedTile, isSnapped,
+            isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
+                    i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isArranging)
         #assert not isConflict
     #foo
@@ -514,68 +540,68 @@ def setColors(self, newRow, clickedTiles, clickedTile, isSnapped,
     #print("in2", newRow)
     for i in indecesToCheck:
         myObject = newRow[i]
-        leftTile = getOrDefault(newRow, i - 1, None)
-        newTile = Tile(TileSet.w)
+        leftTile = common.getOrDefault(newRow, i - 1, None)
+        newTile = objects.Tile(objects.TileSet.w)
         if leftTile is not None:
-            isConflict, clickedTiles, clickedTile, isSnapped, \
-                    sidesToSnap, snapdTile = self.tryConnectNewTile(
+            isConflict, selectedTiles, selectedTile, isSnapped, \
+                    sidesToSnap, snapdTile = tryConnectNewTile(canvas, 
                     newTile.upperLeft.leftSide,
-                    leftTile.upperRight.rightSide, toDraws, clickedTiles,
-                    clickedTile, isSnapped, sidesToSnap, snapdTile, tiles,
+                    leftTile.upperRight.rightSide, toDraws, selectedTiles,
+                    selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
                     isArranging)
         else:
             rightTile = newRow[i + 1]
-            isConflict, clickedTiles, clickedTile, isSnapped, \
-                    sidesToSnap, snapdTile = self.tryConnectNewTile(
+            isConflict, selectedTiles, selectedTile, isSnapped, \
+                    sidesToSnap, snapdTile = tryConnectNewTile(canvas, 
                     newTile.upperRight.rightSide,
-                    rightTile.upperLeft.leftSide, toDraws, clickedTiles,
-                    clickedTile, isSnapped, sidesToSnap, snapdTile, tiles,
+                    rightTile.upperLeft.leftSide, toDraws, selectedTiles,
+                    selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
                     isArranging)
         if not isConflict:
             newRow[i] = newTile
     #'''
-    return isSnapped, sidesToSnap, snapdTile, clickedTile, clickedTiles
+    return isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles
 #'''
-def halfSetImage(self, tile, image):
+def halfSetImage(tile, image):
     tile.oldImage = tile.image
     tile.oldScaledImage = tile.scaledImage
     tile.setImage(image)
 #'''
-def tryFinishSetImages(self, tiles, toDraws):
-    isConflict = self.checkBorders(tiles)
+def tryFinishSetImages(tiles, toDraws):
+    isConflict = checkers.checkBorders(tiles)
     if isConflict:
         for tile in tiles:
             tile.setImage(tile.oldImage)
             tile.scaledImage = tile.oldScaledImage
     else:
         for tile in tiles:
-            tile.scaleImage(Canvas.scale)
+            tile.scaleImage(objects.Canvas.scale)
             toDraws.append(tile)
     return toDraws
 
-def doArranging(self, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
+def doArranging(canvas, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
         dirtyRects, isDrawClicked, isArrangeStep, isArranging, activeRow,
-        clickedTiles, clickedTile, oldClickedTiles, isSnapped, sidesToSnap,
+        selectedTiles, selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
         snapdTile, playCopy, oldPlayPosition, isUnSelectOld, tiles):
-    isDrawClicked, isArrangeStep, isArranging = self.checkPause(mouseLoc,
-            tiles, oldPlayPosition, dirtyRects, oldClickedTiles, playCopy, grid,
+    isDrawClicked, isArrangeStep, isArranging = checkPause(canvas, mouseLoc,
+            tiles, oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
             isUnSelectOld, isDrawClicked, isArrangeStep, isArranging,
             activeRow)
     now = pygame.time.get_ticks()
-    if isArranging and now - self.lastTick >= self.ARRANGE_TIME:
+    if isArranging and now - canvas.lastTick >= objects.Canvas.ARRANGE_TIME:
         #foo
-        self.lastTick = now
+        canvas.lastTick = now
         isArrangeStep = True
         #newRow = []
         #activeRowPrime = []
         #foo
         #print(self.activeRow)
-        self.removeWhiteEnds(activeRow)
+        removeWhiteEnds(activeRow)
         '''
-        isLeftConflict, activeRow, clickedTiles, clickedTile, isSnapped, \
-                sidesToSnap, snapdTile = self.checkAddLeft(activeRow,
-                toDraws, clickedTiles, clickedTile, isSnapped, sidesToSnap,
-                snapdTile, tiles, isArranging
+        isLeftConflict, activeRow, selectedTiles, selectedTile, isSnapped, \
+                sidesToSnap, snapdTile = self.checkAddLeft(canvas, activeRow,
+                toDraws, selectedTiles, selectedTile, isSnapped, sidesToSnap,
+                snapdTile, tiles, isArranging, mouseLoc)
         '''
         #print("in2")
         #print(sidesToSnap)
@@ -588,58 +614,22 @@ def doArranging(self, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
                 #self.activeRow.append(myObject)
                 #newTile = self.checkAddRight(myObject, newTile)
             if not isLast and isinstance(myObject, Tile):
-                toDraws = self.checkMerge(myObject, activeRow, i, toDraws)
+                toDraws = checkMerge(myObject, activeRow, i, toDraws)
                 #self.connectNewTile(newTileA
                 #self.activeRow.append(myObject)
             #TODO: try moving this stuff into previous if block
             #print(sidesToSnap)
-            '''
-            if newTile is not None:
-                isRightConflict, clickedTiles, clickedTile, isSnapped, \
-                        sidesToSnap, snapdTile = self.tryConnectNewTile(
-                        newTile.upperLeft.leftSide,
-                        myObject.upperRight.rightSide, toDraws,
-                        clickedTiles, clickedTile, isSnapped, sidesToSnap,
-                        snapdTile, tiles, isArranging)
-                if not isRightConflict:
-                    #self.addToPlayGroup(newTile, activeRow)
-                    #toDraws.append(newTile)
-                    activeRow.append(newTile)
-            '''
-            #print(sidesToSnap)
-        '''
-        tile = None
-        if isLeftConflict:
-            tile = activeRow[0]
-            if isRightConflict:
-                self.halfSetImage(tile, TileSet.rY)
-            else:
-                if tile.image is TileSet.bR:
-                    self.halfSetImage(tile,TileSet.rYB)
-                elif tile.image is TileSet.bY:
-                    self.halfSetImage(tile,TileSet.y)
-                elif tile.image is TileSet.rB:
-                    self.halfSetImage(tile, TileSet.rY)
-        elif isRightConflict:
-            tile = activeRow[-1]
-            if tile.image is bR or tile.image is bY:
-                self.halfSetImage(tile, TileSet.rB)
-            else:
-                self.halfSetImage(tile, TileSet.rY)
-        if tile is not None:
-            toDraws = self.tryFinishSetImages([tile], toDraws)
-        '''
         #foo
         #print("in", sidesToSnap)
         #print("acriverow", activeRow)
-        newRow, arrangeIndex = self.generateRow(activeRow, arrangeIndex,
+        newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
                 groupGrid)
         #print("newrow", newRow)
         #nextRow = groupGrid.grid[arrangeIndex]
         #for i in range(len(activeRow) + 1):
         #print(sidesToSnap)
-        isSnapped, sidesToSnap, snapdTile, clickedTile, clickedTiles = \
-                self.setColors(newRow, clickedTiles, clickedTile,
+        isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles = \
+                setColors(canvas, newRow, selectedTiles, selectedTile,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
                 isArranging, activeRow)
         #side.tile.neighbors.append(side.adjSide.tile)
@@ -669,6 +659,6 @@ def doArranging(self, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
         isArrangeStep = False
     #self.arrangeTicks += 1
     return (arrangeIndex, isDrawClicked, isArrangeStep, isArranging,
-            activeRow, clickedTiles, clickedTile, isSnapped, sidesToSnap,
+            activeRow, selectedTiles, selectedTile, isSnapped, sidesToSnap,
             snapdTile)
 

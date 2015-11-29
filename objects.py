@@ -16,6 +16,7 @@ class Canvas:
     LEFT = 1
     RIGHT = 3
     PLAY_AREA_FACTOR = .5
+    ARRANGE_TIME = 480
     def __init__(self, tiles, windowSurface):
         self.windowSurface = windowSurface
         self.WIDTH = windowSurface.get_width()
@@ -35,7 +36,6 @@ class Canvas:
         self.oldMouseLoc = None
         self.lastTick = pygame.time.get_ticks()
         #Time for each step of auto arranging function, in seconds.
-        self.ARRANGE_TIME = 480
         self.rules = {"000": 0, "001": 1, "010": 1, "011": 1, "100": 0,
                 "101": 1, "110": 1, "111": 0}
 
@@ -532,16 +532,16 @@ class GroupGrid:
         self.maxX = self.maxY = float("-inf")
         self.tiles = tiles
         for tile in tiles:
-            if x(tile.absPosition) < self.minX:
-                self.minX = x(tile.absPosition)
+            if common.x(tile.absPosition) < self.minX:
+                self.minX = common.x(tile.absPosition)
                 xMinTile = tile
-            if x(tile.absPosition) > self.maxX:
-                self.maxX = x(tile.absPosition)
+            if common.x(tile.absPosition) > self.maxX:
+                self.maxX = common.x(tile.absPosition)
                 yMinTile = tile
-            if y(tile.absPosition) < self.minY:
-                self.minY = y(tile.absPosition)
-            if y(tile.absPosition) > self.maxY:
-                self.maxY = y(tile.absPosition)
+            if common.y(tile.absPosition) < self.minY:
+                self.minY = common.y(tile.absPosition)
+            if common.y(tile.absPosition) > self.maxY:
+                self.maxY = common.y(tile.absPosition)
         #print(int(round(
                 #(maxY - minY) / tiles[0].image.get_width())) + 1)
         #rows = int(round((maxY - minY) / tiles[0].image.get_width())) + 1
@@ -549,15 +549,15 @@ class GroupGrid:
         rows = self.getTileIndex("y", self.maxY) + 1
         cols = self.getTileIndex("x", self.maxX) + 1
         #groupGrid = [[None for i in range(cols)] for j in range(rows)]
-        self.grid = makeGrid(rows, cols, None)
+        self.grid = common.makeGrid(rows, cols, None)
         #print(groupGrid)
         #print(int((y(tile.absPosition) - minY + .1 *
                     #tile.image.get_height()) // tile.image.get_height()))
-        minXsRow = self.getTileIndex("y", y(yMinTile.absPosition))
+        minXsRow = self.getTileIndex("y", common.y(yMinTile.absPosition))
         for tile in tiles:
-            yIndex = self.getTileIndex("y", y(tile.absPosition))
-            xIndex = self.getTileIndex("x", x(tile.absPosition), minXsRow,
-                    yIndex)
+            yIndex = self.getTileIndex("y", common.y(tile.absPosition))
+            xIndex = self.getTileIndex("x", common.x(tile.absPosition),
+                    minXsRow, yIndex)
             self.grid[yIndex][xIndex] = tile
 
     def getTileIndex(self, xOrY, loc, minXsRow=None, yIndex=None):
@@ -571,7 +571,8 @@ class GroupGrid:
                 else:
                     myMin = self.minX + Tile.ADJ_WIDTH / 2
         elif xOrY == "y":
-            resolution = y(self.tiles[0].upperLeft.offset) + Tile.ADJ_HEIGHT
+            resolution = common.y(self.tiles[0].upperLeft.offset) + \
+                    Tile.ADJ_HEIGHT
             myMin = self.minY
         return int((loc - myMin + .1 * resolution) // resolution)
 
