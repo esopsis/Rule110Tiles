@@ -2,6 +2,8 @@ import pygame
 import common
 import objects
 import checkers
+import drawers
+import misc
 
 #TODO: change self.grid to grid
 def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
@@ -48,19 +50,20 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
         arrangeIndex = 1
     return groupGrid, arrangeIndex, isArranging, activeRow, isArrange
 
-def checkPause(canvas, mouseLoc, tiles, oldPlayPosition, dirtyRects,
-        oldselectedTiles, playCopy, grid, isUnSelectOld, isDrawClicked,
+def checkPause(canvas, mouseLoc, isClick, tiles, oldPlayPosition, dirtyRects,
+        oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld, isDrawClicked,
         isArrangeStep, isArranging, activeRow):
-    if canvas.isMouseDown:
+    if isClick:
         if canvas.playIcon.getRect().collidepoint(mouseLoc):
             #foo
             canvas.playIcon.setPlay()
-            pygame.draw.rect(windowSurface, Canvas.BACK_COLOR,
+            pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
                 canvas.playIcon.getRect())
             dirtyRects.append(canvas.playIcon.getRect())
-            drawers.drawNearTiles([canvas.playIcon], tiles,
-                    oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
-                    gridRes, isUnSelectOld)
+            drawers.drawNearTiles(canvas, [canvas.playIcon], tiles,
+                    oldPlayPosition, dirtyRects, oldSelectedTiles, playCopy,
+                    grid,
+                    gridRes, isUnSelectOld, canvas.windowSurface)
             if len(activeRow) > 0:
                 for tile in activeRow[-1].tileGroup:
                     tile.isInPlayGroup = False
@@ -84,8 +87,8 @@ def isSideLoop(lOrR, offset, activeRow):
         return offsetPosition > WIDTH
 
 def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
-        selectedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
-        isArranging):
+        selectedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid,
+        gridRes, isArranging):
     isSnapped, sidesToSnap, snapdTile, isConflict = checkers.checkBordersSnap(
             canvas, None, [tile], checkedTiles, grid, gridRes, False,
             isSnapped, sidesToSnap, snapdTile, isArranging, selectedTiles)
@@ -109,7 +112,7 @@ def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
         #if tile.image is TileSet.rYB:
             #print("in")
         tiles.append(tile)
-        misc.toGrid(tile, self.grid, self.gridRes)
+        misc.toGrid(canvas, tile, grid, gridRes)
         toDraws.append(tile)
         #self.addToPlayGroup(tile, tiles)
         #'''
@@ -128,7 +131,7 @@ def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
             selectedTiles
 
 def tryConnectNewTile(canvas, side, adjSide, toDraws, selectedTiles,
-        selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
+        selectedTile, isSnapped, sidesToSnap, snapdTile, tiles, grid,
         isArranging):
     #print("in", tiles)
     isConflict = False
@@ -147,8 +150,8 @@ def tryConnectNewTile(canvas, side, adjSide, toDraws, selectedTiles,
         isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
                 selectedTiles = checkBordersAdd(canvas, tile, checkedTiles,
                 adjSide.tile.tileGroup, selectedTiles, selectedTile,
-                isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
-                isArranging)
+                isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid,
+                gridRes, isArranging)
         #foo
         #print(isConflict)
         #foo
@@ -192,7 +195,7 @@ def removeWhiteEnds(activeRow):
             return(activeRow[i:end + 1])
 
 def checkAddLeft(canvas, activeRow, toDraws, selectedTiles, selectedTile,
-        isSnapped, sidesToSnap, snapdTile, tiles, isArranging):
+        isSnapped, sidesToSnap, snapdTile, tiles, grid, gridRes, isArranging):
     #print("in")
     #print("in", activeRow)
     isConflict = False
@@ -218,7 +221,7 @@ def checkAddLeft(canvas, activeRow, toDraws, selectedTiles, selectedTile,
                         newTile.upperRight.rightSide,
                         myObject.upperLeft.leftSide, toDraws,
                         selectedTiles, selectedTile, isSnapped, sidesToSnap,
-                        snapdTile, tiles, isArranging)
+                        snapdTile, tiles, grid, gridRes, isArranging)
                 #foo
                 #print("lefttile", sidesToSnap)
                 #toDraws.append(newTile)
@@ -235,7 +238,7 @@ def checkAddLeft(canvas, activeRow, toDraws, selectedTiles, selectedTile,
                         objects.Tile(image).upperRight.rightSide,
                         myObject.upperLeft.leftSide, toDraws,
                         selectedTiles, selectedTile, isSnapped, sidesToSnap,
-                        snapdTile, tiles, isArranging)
+                        snapdTile, tiles, grid, gridRes, isArranging)
                     #foo
                     #print("in", isConflict)
                 if not isConflict:
@@ -369,7 +372,7 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
         #print(leftTiles, groupGrid.grid[arrangeIndex], rightTiles)
         newRow = leftTiles + groupGrid.grid[arrangeIndex] + rightTiles
         arrangeIndex += 1
-        end = self.getEnd(newRow)
+        end = getEnd(newRow)
         for i in range(len(newRow), end + 1):
             if newRow[i] is not None:
                 newRow = newRow[i:end + 1]
@@ -382,7 +385,7 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
     return newRow, arrangeIndex
 
 def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
-        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, isArranging):
+        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging):
     #print(newRow, tileIndex)
     centerObject = newRow[tileIndex]
     #isStart = tileIndex == 0
@@ -471,7 +474,7 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
                 selectedTiles = checkBordersAdd(canvas, centerObject, [],
                 activeRow[-1].tileGroup, selectedTiles, selectedTile,
-                isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
+                isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
                 isArranging)
         #print(sidesToSnap)
         #'''
@@ -495,7 +498,8 @@ def trySetColor(self):
 '''
 
 def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
-        sidesToSnap, snapdTile, toDraws, tiles, isArranging, activeRow):
+        sidesToSnap, snapdTile, toDraws, tiles, isArranging, grid, gridRes,
+        activeRow):
     indecesToCheck = []
     #foo
     #print(newRow)
@@ -507,7 +511,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
             #print("in2", newRow)
             isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
-                    sidesToSnap, snapdTile, toDraws, tiles, isArranging)
+                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging)
             #foo
             #print("in3", newRow)
             if newRow[i] is None:
@@ -533,7 +537,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         if newRow[i] is not None:
             isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
-                    sidesToSnap, snapdTile, toDraws, tiles, isArranging)
+                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging)
         #assert not isConflict
     #foo
     #print(indecesToCheck)
@@ -548,7 +552,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     newTile.upperLeft.leftSide,
                     leftTile.upperRight.rightSide, toDraws, selectedTiles,
                     selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
-                    isArranging)
+                    grid, gridRes, isArranging)
         else:
             rightTile = newRow[i + 1]
             isConflict, selectedTiles, selectedTile, isSnapped, \
@@ -556,7 +560,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     newTile.upperRight.rightSide,
                     rightTile.upperLeft.leftSide, toDraws, selectedTiles,
                     selectedTile, isSnapped, sidesToSnap, snapdTile, tiles,
-                    isArranging)
+                    grid, gridRes, isArranging)
         if not isConflict:
             newRow[i] = newTile
     #'''
@@ -579,12 +583,13 @@ def tryFinishSetImages(tiles, toDraws):
             toDraws.append(tile)
     return toDraws
 
-def doArranging(canvas, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
+def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
         dirtyRects, isDrawClicked, isArrangeStep, isArranging, activeRow,
-        selectedTiles, selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
+        selectedTiles, selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
         snapdTile, playCopy, oldPlayPosition, isUnSelectOld, tiles):
-    isDrawClicked, isArrangeStep, isArranging = checkPause(canvas, mouseLoc,
-            tiles, oldPlayPosition, dirtyRects, oldselectedTiles, playCopy, grid,
+    isDrawClicked, isArrangeStep, isArranging = checkPause(canvas, mouseLoc, isClick,
+            tiles, oldPlayPosition, dirtyRects, oldSelectedTiles, playCopy,
+            grid, gridRes, 
             isUnSelectOld, isDrawClicked, isArrangeStep, isArranging,
             activeRow)
     now = pygame.time.get_ticks()
@@ -601,7 +606,7 @@ def doArranging(canvas, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraw
         isLeftConflict, activeRow, selectedTiles, selectedTile, isSnapped, \
                 sidesToSnap, snapdTile = self.checkAddLeft(canvas, activeRow,
                 toDraws, selectedTiles, selectedTile, isSnapped, sidesToSnap,
-                snapdTile, tiles, isArranging, mouseLoc)
+                snapdTile, tiles, grid, gridRes, isArranging)
         '''
         #print("in2")
         #print(sidesToSnap)
@@ -613,7 +618,7 @@ def doArranging(canvas, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraw
             #if isLast:
                 #self.activeRow.append(myObject)
                 #newTile = self.checkAddRight(myObject, newTile)
-            if not isLast and isinstance(myObject, Tile):
+            if not isLast and isinstance(myObject, objects.Tile):
                 toDraws = checkMerge(myObject, activeRow, i, toDraws)
                 #self.connectNewTile(newTileA
                 #self.activeRow.append(myObject)
@@ -631,7 +636,7 @@ def doArranging(canvas, grid, groupGrid, arrangeIndex, mouseLoc, isClick, toDraw
         isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles = \
                 setColors(canvas, newRow, selectedTiles, selectedTile,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
-                isArranging, activeRow)
+                isArranging, grid, gridRes, activeRow)
         #side.tile.neighbors.append(side.adjSide.tile)
         #self.snapSides()
         #foo

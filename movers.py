@@ -6,7 +6,7 @@ import checkers
 import misc
 
 def moveUnSnap(canvas, mouseLoc, selectedTiles, selectedTile,
-        oldselectedTiles, sidesToSnap, tiles):
+        oldSelectedTiles, sidesToSnap, tiles):
     for tile in selectedTiles:
         tile.setPosition(common.mySub(mouseLoc, tile.mouseOffset))
     if canvas.isLDown:
@@ -40,16 +40,16 @@ def moveUnSnap(canvas, mouseLoc, selectedTiles, selectedTile,
     sidesToSnap = []
     snapdTile = None
     isSnapped = False
-    oldselectedTiles = []
-    oldselectedTiles.extend(selectedTile.tileGroup)
+    oldSelectedTiles = []
+    oldSelectedTiles.extend(selectedTile.tileGroup)
     #for tile in self.selectedTile.tileGroup:
-        #self.oldselectedTiles.append(tile)
+        #self.oldSelectedTiles.append(tile)
     isUnSelectOld = True
-    return (oldselectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld)
+    return (oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld)
     
 #Unsnaps tile if leftclick, moves group if rightclick.
 def moveUnSnappable(canvas, mouseLoc, selectedTiles, selectedTile,
-        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld,
+        oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld,
         tiles):
     #print("in")
     for side in snapdTile.sides:
@@ -68,12 +68,12 @@ def moveUnSnappable(canvas, mouseLoc, selectedTiles, selectedTile,
                 side.corner.getOffset()), side.adjSide.corner.getPosition()) >
                 objects.Canvas.SNAP_DISTANCE * objects.Canvas.scale + 1):
             #print("in2")
-            oldselectedTiles, isSnapped, sidesToSnap, snapdTile, \
+            oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, \
                     isUnSelectOld = moveUnSnap(canvas, mouseLoc,
-                    selectedTiles, selectedTile, oldselectedTiles, sidesToSnap,
+                    selectedTiles, selectedTile, oldSelectedTiles, sidesToSnap,
                     tiles)
             break
-    return (oldselectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld)
+    return (oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld)
 
 def noSnapMove(mouseLoc, selectedTiles):
     #foo
@@ -139,15 +139,15 @@ def moveSnappable(canvas, mouseLoc, checkedTiles, selectedTiles,
     #return isDrawClicked
     return isSnapped, sidesToSnap, snapdTile, snapdSide, adjSide
 
-def tryMoveAll(tiles, grid, gridRes, dirtyRects, isDrawAll):
+def tryMoveAll(canvas, tiles, mouseLoc, grid, gridRes, dirtyRects, isDrawAll):
     #print(tiles)
     #foo
     #print("in3", tiles)
     for tile in tiles:
-        misc.toGrid(tile, grid, gridRes)
+        misc.toGrid(canvas, tile, grid, gridRes)
         #for tile in backTiles:
             #tile.draw()
-        pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
+        pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
                 tile.getLargeRect())
         dirtyRects.append(tile.getLargeRect())
         #foo
@@ -160,7 +160,7 @@ def tryMoveAll(tiles, grid, gridRes, dirtyRects, isDrawAll):
     return isDrawAll
 
 def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
-        dirtyRects, selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
+        dirtyRects, selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
         snapdTile, palletBack, isUnSelectOld, snapdSide, adjSide, grid, gridRes, isArranging,
         windowSurface):
     #oldPos = self.selectedTile.position
@@ -190,9 +190,9 @@ def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
             snapdTile.tileGroup):
         #foo
         #print("in2")
-        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld = \
+        oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld = \
                 moveUnSnappable(canvas, mouseLoc, selectedTiles,
-                selectedTile, oldselectedTiles, isSnapped, sidesToSnap,
+                selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
                 snapdTile, isUnSelectOld, tiles)
     elif selectedTile.isToDel:
         #foo
@@ -209,11 +209,11 @@ def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
     #print(self.selectedTile.absPosition)
     #self.selectedTile.resize(Canvas.scale)
     #print("in2")
-    return (isDrawClicked, oldselectedTiles, isSnapped, sidesToSnap, snapdTile,
+    return (isDrawClicked, oldSelectedTiles, isSnapped, sidesToSnap, snapdTile,
             isUnSelectOld, snapdSide, adjSide)
 
 def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
-        oldselectedTiles, playCopy, isUnSelectOld, mouseLoc):
+        oldSelectedTiles, playCopy, isUnSelectOld, mouseLoc):
     pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
             playCopy.getRect())
     dirtyRects.append(playCopy.getRect())
@@ -246,12 +246,12 @@ def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
         #print("in5")
         #isDrawClicked = True
         isUnSelectOld = True
-        oldselectedTiles = []
+        oldSelectedTiles = []
         #foo
         #print("in", len(self.activeTileRow[0].tileGroup))
         for tile in activeRow[0].tileGroup:
             tile.isToPlay = False
-            oldselectedTiles.append(tile)
+            oldSelectedTiles.append(tile)
         #foo
         #print("isdraws")
         #for tile in tiles: 
@@ -261,7 +261,7 @@ def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
             #print tile.isToPlay
         activeRow = None
         selectedTile = None
-        #print(self.oldselectedTiles)
+        #print(self.oldSelectedTiles)
     if toPlay is not None and (activeRow is None or
             toPlay.tileGroup is not activeRow[0].tileGroup):
         #foo
@@ -276,5 +276,5 @@ def movePlayIcon(canvas, dirtyRects, tiles, activeRow, selectedTile,
     #foo
     #print("in", isDrawClicked)
     isDrawClicked = True
-    return (isDrawClicked, activeRow, selectedTile, oldselectedTiles,
+    return (isDrawClicked, activeRow, selectedTile, oldSelectedTiles,
             oldPlayPosition, isUnSelectOld)

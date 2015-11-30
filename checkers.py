@@ -56,7 +56,7 @@ def checkPallet(canvas, tiles, mouseLoc, isDrag, selectedTile, fromPallet):
     return isDrag, selectedTile, fromPallet
 
 def checkTrash(canvas, tiles, selectedTiles, oldPositions, isUnClick,
-            dirtyRects, selectedTile, oldselectedTiles, playCopy, grid, gridRes, palletBack,
+            dirtyRects, selectedTile, oldSelectedTiles, playCopy, grid, gridRes, palletBack,
             isUnSelectOld, isDeleted, windowSurface):
     if selectedTile is not None and (selectedTile.isToDel or
             (canvas.isRDown or not selectedTile.isSnapped())):
@@ -92,7 +92,7 @@ def checkTrash(canvas, tiles, selectedTiles, oldPositions, isUnClick,
                     dirtyRects.append(tile.getLargeRect())
                 #print(self.grid)
                 drawers.drawNearTiles(canvas, selectedTiles, tiles,
-                        oldPositions, dirtyRects, oldselectedTiles, playCopy,
+                        oldPositions, dirtyRects, oldSelectedTiles, playCopy,
                         grid, gridRes, isUnSelectOld, windowSurface)
                 isDeleted = True
         else:
@@ -103,7 +103,7 @@ def checkTrash(canvas, tiles, selectedTiles, oldPositions, isUnClick,
 
 def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
         isDrawClicked, oldPositions, dirtyRects, selectedTile, fromPallet,
-        oldselectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, grid,
+        oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, grid,
         gridRes, isArrange, oldPlayPosition, isUnSelectOld, snapdSide,
         mouseLoc):
     if isUnClick and not isClick:
@@ -136,13 +136,13 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
                 oldPositions.append(tile.position)
                 #print("in2")
                 misc.toGrid(canvas, tile, grid, gridRes)
-                #self.oldselectedTiles = []
-            oldselectedTiles = []
-            oldselectedTiles.extend(selectedTile.tileGroup)
+                #self.oldSelectedTiles = []
+            oldSelectedTiles = []
+            oldSelectedTiles.extend(selectedTile.tileGroup)
             #foo
-            #print("in2", oldselectedTiles)
+            #print("in2", oldSelectedTiles)
             #for tile in self.selectedTile.tileGroup:
-                #self.oldselectedTiles.append(tile)
+                #self.oldSelectedTiles.append(tile)
         fromPallet = None
         #self.selectedTile = None
         isSnapped = False
@@ -165,7 +165,7 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
             dirtyRects.append(canvas.playIcon.getRect())
             drawers.drawNearTiles(canvas, [playCopy,
                     canvas.playIcon], tiles, oldPlayPosition, dirtyRects,
-                    oldselectedTiles, playCopy, grid, gridRes, isUnSelectOld,
+                    oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld,
                     canvas.windowSurface)
             playCopy = None
             isDrawClicked = True
@@ -191,7 +191,7 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
                                     activationPoint):
                                 self.isArrange = True
                     '''
-    return (isDrawClicked, selectedTile, fromPallet, oldselectedTiles,
+    return (isDrawClicked, selectedTile, fromPallet, oldSelectedTiles,
             isSnapped, sidesToSnap, snapdTile, playCopy, isArrange, snapdSide)
 
 def checkBorderSnap(mouseLoc, sideA, sideB, checkedTiles, isDragging,
