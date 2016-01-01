@@ -1,3 +1,4 @@
+#TODO: Tiles should maybe turn red one frame earlier
 from __future__ import division
 import pygame
 import sys
@@ -6,8 +7,8 @@ import math
 #from operator import add, sub
 #from pygame.locals import *
 pygame.init()
-WIDTH = 400
-HEIGHT = 350
+WIDTH = 700
+HEIGHT = 500
 windowSurface = pygame.display.set_mode((WIDTH, HEIGHT))
 #import arrangers
 import objects

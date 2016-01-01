@@ -31,7 +31,8 @@ class Canvas:
         self.playIcon = Icon(Icon.PLAY, (self.WIDTH - 80, 60), 90, 90, self)
         for i in range(len(TileSet.palletImgs)):
             image = TileSet.palletImgs[i]
-            tile = Tile(self, image, (i * Tile.ADJ_WIDTH, 0), False)
+            tile = Tile(self, image, (i * Tile.ADJ_WIDTH, 0), False,
+                    self.tilePallet)
             self.tilePallet.append(tile)
         self.oldMouseLoc = None
         self.lastTick = pygame.time.get_ticks()
@@ -213,8 +214,8 @@ class Tile:
             TILE_WHITE, TILE_WHITE, BLUE, RED], TileSet.y : [YELLOW, BLUE, RED,
             YELLOW, TILE_WHITE, TILE_WHITE], TileSet.w : [TILE_WHITE,
             TILE_WHITE, TILE_WHITE, TILE_WHITE, TILE_WHITE, TILE_WHITE]}
-    def __init__(self, canvas, image = None, absPosition = None, \
-            isMovable = True):
+    def __init__(self, canvas, image=None, absPosition=None, \
+            isMovable=True, palletGroup=None):
         self.canvas = canvas
         self.absPosition = absPosition
         #self.position = absPosition
@@ -275,7 +276,7 @@ class Tile:
         if image is not None:
             self.setImage(image)
         if absPosition is not None:
-            self.scalePosition(Canvas.scale)
+            self.scalePosition(Canvas.scale, palletGroup)
         '''
         if image is None:
             self.resize(canvas.Canvas.scale)
@@ -357,12 +358,12 @@ class Tile:
         self.tileGroup = [self]
         #self.neighbors = []
     
-    def setPosition(self, position):
+    def setPosition(self, position, pallet=None):
         self.position = position
         self.absPosition = map(int, map(round, common.myDiv(common.mySub(
                 position, (self.canvas.WIDTH / 2, self.canvas.HEIGHT / 2)),
                 Canvas.scale)))
-        self.scalePosition(Canvas.scale)
+        self.scalePosition(Canvas.scale, pallet)
         #self.absPosition = ((x(position) - WIDTH / 2) / Canvas.scale,
                 #(y(position) - HEIGHT / 2) / Canvas.scale)
 
@@ -454,7 +455,7 @@ class Tile:
         #self.scaledImage  = pygame.transform.smoothscale(self.image,
             #(int(round(self.image.get_width() * scale)),
             #int(round(self.image.get_height() * scale))))
-        self.scaledImage  = pygame.transform.smoothscale(self.image,
+        self.scaledImage = pygame.transform.smoothscale(self.image,
             (self.adjWidth, self.adjHeight))
         
     def resize(self, scale):
@@ -470,23 +471,27 @@ class Tile:
                 (self.adjWidth, self.adjHeight))
         #pygame.display.flip()
         
-    def scalePosition(self, scale):
+    def scalePosition(self, scale, pallet=None):
         #print(self.absPosition)
         #self.position = (scale * x(self.absPosition), scale *
                 #y(self.absPosition))
-        #fooo
-        print("in", self.absPosition)
+        #foo
+        #print("in", self.absPosition)
         self.position = common.myMult(scale, self.absPosition)
         self.resize(scale)
         if self.isMovable:
             self.position = common.myAdd(self.position,
-                    (self.canvas.windowSurface.get_width() / 2,
-                     self.canvas.windowSurface.get_height() / 2))
+                    map(round, (self.canvas.windowSurface.get_width() / 2,
+                     self.canvas.windowSurface.get_height() / 2)))
         else:
-            self.position = common.myAdd(self.position,
-                    (self.adjWidth / 2,
-                    self.adjHeight / 2))
-        print("in2", self.position)
+            if len(pallet) == 0:
+                tile = self
+            else:
+                tile = pallet[0]
+                #print(tile.adjWidth / 2)
+            self.position = common.myAdd(self.position, map(round,
+                    (tile.adjWidth / 2, tile.adjHeight / 2)))
+        #print("in2", self.position)
 
     def getSide(self, myType):
         return self.sideOptions[myType]

@@ -92,11 +92,11 @@ def scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollU
     if isScrollDown or isScrollUp:
         #print("in")
         for tile in tiles:
-            pygame.draw.rect(windowSurface, canvas.Canvas.BACK_COLOR,
+            pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
                     tile.getLargeRect())
             dirtyRects.append(tile.getLargeRect())
-            tile.resize(canvas.Canvas.scale)
-            tile.scalePosition(canvas.Canvas.scale)
+            tile.resize(objects.Canvas.scale)
+            tile.scalePosition(objects.Canvas.scale)
             #print("in4")
             #self.toGrid(tile, self.grid, self.gridRes)
         grid, gridRes = setGrid(canvas, tiles)
@@ -105,7 +105,7 @@ def scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollU
                     tile.getLargeRect())
             dirtyRects.append(tile.getLargeRect())
             tile.resize(objects.Canvas.scale)
-            tile.scalePosition(objects.Canvas.scale)
+            tile.scalePosition(objects.Canvas.scale, canvas.tilePallet)
             dirtyRects.append(tile.getLargeRect())
         palletBack = resizePalletBack(canvas)
         isDrawAll = True
@@ -282,8 +282,9 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
     #print(isArranging)
     if isUnClick:
         #print("in1")
+        #TODO: Should isclick be set to false?  It was before, glitches now?
         canvas.isMouseDown = canvas.isLDown = canvas.isRDown = \
-                isClick = isDrag = False
+                isDrag = False
         #isPastClick = False
     #print(button)
     else:
@@ -311,8 +312,9 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         #'''
         #print(self.isMouseDown, isScrollDown, isScrollUp, isUnClick)
         #print(isScrollDown, isScrollUp)
-        grid, gridRes, palletBack, isDrawAll = scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollUp,
-                dirtyRects, isDrawAll, windowSurface)
+        grid, gridRes, palletBack, isDrawAll = scrollSize(canvas, tiles, grid,
+                gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
+                isDrawAll, windowSurface)
         #areasToCheck = self.getAreasToCheck(mouseLoc)
         #print(areasToCheck)
         #backTiles = []
