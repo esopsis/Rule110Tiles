@@ -542,9 +542,9 @@ class GroupGrid:
                 xMinTile = tile
             if common.x(tile.absPosition) > self.maxX:
                 self.maxX = common.x(tile.absPosition)
-                yMinTile = tile
             if common.y(tile.absPosition) < self.minY:
                 self.minY = common.y(tile.absPosition)
+                yMinTile = tile
             if common.y(tile.absPosition) > self.maxY:
                 self.maxY = common.y(tile.absPosition)
         #print(int(round(
@@ -558,7 +558,7 @@ class GroupGrid:
         #print(groupGrid)
         #print(int((y(tile.absPosition) - minY + .1 *
                     #tile.image.get_height()) // tile.image.get_height()))
-        minXsRow = self.getTileIndex("y", common.y(yMinTile.absPosition))
+        minXsRow = self.getTileIndex("y", common.y(xMinTile.absPosition))
         for tile in tiles:
             yIndex = self.getTileIndex("y", common.y(tile.absPosition))
             xIndex = self.getTileIndex("x", common.x(tile.absPosition),

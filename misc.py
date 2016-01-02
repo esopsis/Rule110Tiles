@@ -87,8 +87,8 @@ def resizePalletBack(canvas):
             lastTile.scaledImage.get_height())
     return palletBack
 
-def scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
-        isDrawAll, windowSurface):
+def scrollSize(canvas, tiles, grid, gridRes, palletBack, isScrollDown,
+        isScrollUp, dirtyRects, isDrawAll, windowSurface):
     if isScrollDown or isScrollUp:
         #print("in")
         for tile in tiles:
@@ -263,12 +263,12 @@ def addAreas(canvas, position, areasToCheck, grid, gridRes):
         if not area in areasToCheck:
             areasToCheck.append(area)
 
-def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
-        isClick, isScrollDown, isScrollUp, isSpace, isArrangeStep, grid, gridRes, groupGrid,
-        arrangeIndex, isArranging, activeRow, isDrag, selectedTile, fromPallet, palletBack,
-        oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy, 
-        isArrange, oldPlayPosition, isUnSelectOld, snapdSide, adjSide, clock,
-        FPS, oldMouseLoc, windowSurface):
+def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick, isClick,
+        isScrollDown, isScrollUp, isSpace, isArrangeStep, grid, gridRes,
+        groupGrid, arrangeIndex, isArranging, activeRow, isDrag, selectedTile,
+        fromPallet, palletBack, oldSelectedTiles, isSnapped, sidesToSnap,
+        snapdTile, playCopy, isArrange, oldPlayPosition, isUnSelectOld,
+        snapdSide, adjSide, clock, FPS, oldMouseLoc, windowSurface):
     #print("grid", self.grid)
     #print("tick")
     #oldSelectedTiles = []
@@ -283,8 +283,7 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
     if isUnClick:
         #print("in1")
         #TODO: Should isclick be set to false?  It was before, glitches now?
-        canvas.isMouseDown = canvas.isLDown = canvas.isRDown = \
-                isDrag = False
+        canvas.isMouseDown = canvas.isLDown = canvas.isRDown = isDrag = False
         #isPastClick = False
     #print(button)
     else:
@@ -298,11 +297,11 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         arrangeIndex, isDrawClicked, isArrangeStep, isArranging, activeRow, \
                 selectedTiles, selectedTile, isSnapped, sidesToSnap, \
                 snapdtile = arrangers.doArranging(canvas, grid, gridRes,
-                groupGrid, arrangeIndex,
-                mouseLoc, isClick, toDraws, dirtyRects, isDrawClicked,
-                isArrangeStep, isArranging, activeRow, selectedTiles,
-                selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
-                snapdTile, playCopy, oldPlayPosition, isUnSelectOld, tiles)
+                groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
+                dirtyRects, isDrawClicked, isArrangeStep, isArranging,
+                activeRow, selectedTiles, selectedTile, oldSelectedTiles,
+                isSnapped, sidesToSnap, snapdTile, playCopy, oldPlayPosition,
+                isUnSelectOld, tiles)
     else:
         clock.tick(FPS)
         isUnSelectOld = False
@@ -333,8 +332,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
                 checkers.checkUnclick(canvas, isUnClick, isClick, tiles,
                 selectedTiles, isDrawClicked, oldPositions, dirtyRects,
                 selectedTile, fromPallet, oldSelectedTiles, isSnapped,
-                sidesToSnap, snapdTile, playCopy, grid, gridRes, isArrange, oldPlayPosition,
-                isUnSelectOld, snapdSide, mouseLoc)
+                sidesToSnap, snapdTile, playCopy, grid, gridRes, isArrange,
+                oldPlayPosition, isUnSelectOld, snapdSide, mouseLoc)
         #'''
         #if isSpace:
             #self.isArranging = not self.isArranging
@@ -347,8 +346,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         '''
         isDeleted = checkers.checkTrash(canvas, tiles, selectedTiles,
                 oldPositions, isUnClick, dirtyRects, selectedTile,
-                oldSelectedTiles, playCopy, grid, gridRes, palletBack, isUnSelectOld, isDeleted,
-                windowSurface)
+                oldSelectedTiles, playCopy, grid, gridRes, palletBack,
+                isUnSelectOld, isDeleted, windowSurface)
         #Set mouse offset if drag background 
         if not isDrag and isClick:
             #print("in5")
@@ -399,8 +398,9 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
                             movers.moveSome(canvas, mouseLoc, tiles,
                             selectedTiles, oldPositions, isUnClick, dirtyRects,
                             selectedTile, oldSelectedTiles, isSnapped,
-                            sidesToSnap, snapdTile, palletBack, isUnSelectOld, snapdSide,
-                            adjSide, grid, gridRes, isArranging, windowSurface)
+                            sidesToSnap, snapdTile, palletBack, isUnSelectOld,
+                            snapdSide, adjSide, grid, gridRes, isArranging,
+                            windowSurface)
                 #foo
                 #print("in", isDrawClicked)
             #Move all tiles if dragging background
@@ -408,8 +408,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
                     tiles[-1].mouseOffset is not None):
                 #foo
                 #print("in2")
-                isDrawAll = movers.tryMoveAll(canvas, tiles, mouseLoc, grid, gridRes,
-                        dirtyRects, isDrawAll)
+                isDrawAll = movers.tryMoveAll(canvas, tiles, mouseLoc, grid,
+                        gridRes, dirtyRects, isDrawAll)
                     #print("in")
             #print(self.isDrawClicked)
             #print(self.isDrawClicked)
@@ -428,8 +428,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         #print("in6", isDrawClicked)
         drawers.draw(canvas, tiles, oldPositions, isUnClick, toDraws,
                 dirtyRects, isArrangeStep, isDrawClicked, isDrawAll,
-                selectedTile, oldSelectedTiles, playCopy, palletBack, grid, gridRes, isUnSelectOld,
-                windowSurface)
+                selectedTile, oldSelectedTiles, playCopy, palletBack, grid,
+                gridRes, isUnSelectOld, windowSurface)
     #self.oldSelectedTiles = []
     #TODO: These next two lines MAY be problematic.
     #TODO: It MAY be better to move this to earlier in the program.
@@ -439,8 +439,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
     oldMouseLoc = mouseLoc
     if playCopy is not None:
         playCopy.oldRect = playCopy.getRect()
-    return (selectedTiles, isArrangeStep, grid, gridRes, groupGrid, arrangeIndex,
-            isArranging, activeRow, isDrag, selectedTile, fromPallet, palletBack,
-            oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, playCopy,
-            isArrange, oldPlayPosition, isUnSelectOld, snapdSide, adjSide,
-            oldMouseLoc)
+    return (selectedTiles, isArrangeStep, grid, gridRes, groupGrid,
+            arrangeIndex, isArranging, activeRow, isDrag, selectedTile,
+            fromPallet, palletBack, oldSelectedTiles, isSnapped, sidesToSnap,
+            snapdTile, playCopy, isArrange, oldPlayPosition, isUnSelectOld,
+            snapdSide, adjSide, oldMouseLoc)

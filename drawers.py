@@ -23,8 +23,7 @@ def initDraw(canvas, tiles, palletBack, windowSurface):
     pygame.display.flip()
 
 def drawPalletBack(palletBack, windowSurface):
-    pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR,
-            palletBack)
+    pygame.draw.rect(windowSurface, objects.Canvas.BACK_COLOR, palletBack)
     #return backRect
 
 def drawInOrder(tiles, allTiles, windowSurface):
@@ -33,7 +32,8 @@ def drawInOrder(tiles, allTiles, windowSurface):
 
 #Objects should all be of the same type
 def drawNearTiles(canvas, myObjects, allTiles, oldPositions, dirtyRects,
-        oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld, windowSurface):
+        oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld,
+        windowSurface):
     #if len(myObjects) == 0 or isinstance(myObjects[0], Tile):
     #print("in3")
     areasToCheck = []
@@ -85,9 +85,9 @@ def drawPallet(canvas, palletBack, dirtyRects, windowSurface):
     for tile in canvas.tilePallet:
         tile.draw()
 
-def drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws,
-        dirtyRects, isArrangeStep, selectedTile, oldSelectedTiles, playCopy, palletBack, grid,
-        gridRes, isUnSelectOld, windowSurface):
+def drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
+        isArrangeStep, selectedTile, oldSelectedTiles, playCopy, palletBack,
+        grid, gridRes, isUnSelectOld, windowSurface):
     #print("in")
     #for tile in self.selectedTiles:
         #print(tile.position)
@@ -112,7 +112,8 @@ def drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws,
             tile.scalePosition(objects.Canvas.scale)
         #print("in2")
         drawNearTiles(canvas, toDraws, tiles, oldPositions, dirtyRects,
-                oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld, windowSurface)
+                oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld,
+                windowSurface)
         drawPallet(canvas, palletBack, dirtyRects, windowSurface)
         #if self.fromPallet is None:
         #for tile in self.selectedTile.tileGroup:
@@ -128,7 +129,8 @@ def drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws,
 
 def draw(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
         isArrangeStep, isDrawClicked, isDrawAll, selectedTile,
-        oldSelectedTiles, playCopy, palletBack, grid, gridRes, isUnSelectOld, windowSurface):
+        oldSelectedTiles, playCopy, palletBack, grid, gridRes, isUnSelectOld,
+        windowSurface):
     #print(self.isUnSelectOld, selfself.isDrawClicked)
     #if isDrawClicked:
     #print("in4")
@@ -150,7 +152,7 @@ def draw(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
             #print("in3")
             for tile in oldSelectedTiles:
                 pygame.draw.rect(canvas.windowSurface,
-                        objects.Canvas.BACK_COLOR, tile.getLargeRect())
+                    objects.Canvas.BACK_COLOR, tile.getLargeRect())
                 dirtyRects.append(tile.getLargeRect())
         #print("in2")
         '''
@@ -164,7 +166,8 @@ def draw(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
         #print(self.selectedTiles)
         drawTileGroups(canvas, tiles, oldPositions, isUnClick,toDraws,
                 dirtyRects, isArrangeStep, selectedTile, oldSelectedTiles,
-                playCopy, palletBack, grid, gridRes, isUnSelectOld, windowSurface)
+                playCopy, palletBack, grid, gridRes, isUnSelectOld,
+                windowSurface)
         if isUnClick:
             drawPallet(canvas, palletBack, dirtyRects, windowSurface)
         '''

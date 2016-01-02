@@ -25,7 +25,7 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
         activeRow = groupGrid.grid[0]
         #print(activeRow)
         #self.activeTileRow = self.groupGrid[len(self.groupGrid) - 1]
-        #print(groupGrid)
+        #print("grouopGrid", groupGrid)
         #self.activeBinRow = [0, 0]
         #for tile in activeRow[0].tileGroup:
             #tile.isToPlay = False
@@ -323,6 +323,8 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
     rightTiles = []
     #foo
     #print(activeRow)
+    #for tile in activeRow:
+        #print("activeRow", tile, tile.position)
     #print("in2")
     for i in range(len(activeRow) + 1):
         leftObject = common.getOrDefault(activeRow, i - 2, None)
@@ -353,9 +355,14 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
                 newTile.upperLeft.rightSide.adjSide = \
                         centerObject.lower.rightSide
             if newTile is not None:
+                #foo
+                #print("")
+                #print(newTile, newTile.position)
                 if isInGroupGrid:
                     xIndex = groupGrid.getTileIndex("x",
                             common.x(newTile.absPosition))
+                    #print("xIndex", xIndex)
+                    #print("groupGrid", groupGrid.grid[arrangeIndex])
                     if xIndex < 0:
                         leftTiles.append(newTile)
                     elif xIndex >= len(groupGrid.grid[arrangeIndex]):
@@ -363,15 +370,21 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
                     else:
                         newSpace = groupGrid.grid[arrangeIndex][xIndex]
                         if newSpace is None:
+                            #pass
                             groupGrid.grid[arrangeIndex][xIndex] = newTile
                 else:
                     #TODO: change this to newrow maybe
                     leftTiles.append(newTile)
+    #foo
+    #for row in groupGrid.grid:
+        #print(row)
+    #print("next")
     if isInGroupGrid:
         #foo
-        #print(leftTiles, groupGrid.grid[arrangeIndex], rightTiles)
         #print("in")
         #print(leftTiles, groupGrid.grid[arrangeIndex], rightTiles)
+        #for tile in groupGrid.grid[arrangeIndex] + rightTiles:
+            #print("newTiles", tile, tile.position)
         newRow = leftTiles + groupGrid.grid[arrangeIndex] + rightTiles
         arrangeIndex += 1
         end = getEnd(newRow)
@@ -387,7 +400,8 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
     return newRow, arrangeIndex
 
 def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
-        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging):
+        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
+        isArranging):
     #print(newRow, tileIndex)
     centerObject = newRow[tileIndex]
     #isStart = tileIndex == 0
@@ -444,17 +458,18 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
     else:
         image = objects.TileSet.w
     #print(sidesToSnap)
-    #Next few lines necessary?
+    #TODO: Next few lines necessary?
     if image is not None:
         #if centerObject.isSnapped:
-        isConflict = False
-        #'''
+        #isConflict = False
+        '''
         if centerObject.image is not objects.Tile.delTile:
             #foo
             #print("in")
             #TODO: if image is not centerObject.image:
             oldImage = centerObject.image
-            if not (oldImage is objects.TileSet.bR and image is objects.TileSet.bY):
+            if not (oldImage is objects.TileSet.bR and image is
+                    objects.TileSet.bY):
                 oldScaledImage = centerObject.scaledImage
                 centerObject.setImage(image)
                 #isConflict = False
@@ -465,7 +480,7 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
                 else:
                     centerObject.scaleImage(objects.Canvas.scale)
                     toDraws.append(centerObject)
-        #'''
+        '''
         #if centerObject.image is Tile.delTile:
         centerObject.setImage(image)
         centerObject.scaleImage(objects.Canvas.scale)
@@ -481,13 +496,13 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         #print(sidesToSnap)
         #'''
         #isConflict = False
-        if isConflict:
+        #if isConflict:
             #print(newRow)
-            newRow[newRow.index(centerObject)] = None
+            #newRow[newRow.index(centerObject)] = None
             #print(newRow)
         #else:
             #self.addToPlayGroup(centerObject, activeRow)
-    return isConflict, selectedTile, selectedTiles
+    return selectedTile, selectedTiles
 
 '''
 def trySetColor(self):
@@ -504,29 +519,25 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         activeRow):
     indecesToCheck = []
     #foo
-    #print(newRow)
+    #for tile in activeRow:
+        #print("activeRow", tile, tile.position)
+    #for tile in newRow:
+        #print("newRow", tile, tile.position)
+    #print("")
     for i in range(len(newRow)):
-        #move next line down into line after that
+        #TODO: move next line down into line after that
         centerObject = newRow[i]
         if centerObject.image is objects.Tile.delTile:
             #foo
             #print("in2", newRow)
-            isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
+            selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
-                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging)
-            #foo
-            #print("in3", newRow)
-            if newRow[i] is None:
-                #print("in", i)
-                indecesToCheck.append(i)
-        #print(newRow)
-            #foo
-        #tilePosition =
-        #newTile = Tile(image)
-        #newRow.append(newTile)
-        #tiles.append(newTile)
-    #print("in", sidesToSnap)
-    #'''
+                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
+                    isArranging)
+            #if newRow[i] is None:
+                #indecesToCheck.append(i)
+    '''
+    #TODO: Do I still need this neighbor checking stuff?
     neighborIndeces = []
     for i in indecesToCheck:
         if i - 1 > 0:
@@ -565,7 +576,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     grid, gridRes, isArranging)
         if not isConflict:
             newRow[i] = newTile
-    #'''
+    '''
     return isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles
 #'''
 def halfSetImage(tile, image):
@@ -585,15 +596,15 @@ def tryFinishSetImages(tiles, toDraws):
             toDraws.append(tile)
     return toDraws
 
-def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc, isClick, toDraws,
-        dirtyRects, isDrawClicked, isArrangeStep, isArranging, activeRow,
-        selectedTiles, selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
-        snapdTile, playCopy, oldPlayPosition, isUnSelectOld, tiles):
-    isDrawClicked, isArrangeStep, isArranging = checkPause(canvas, mouseLoc, isClick,
-            tiles, oldPlayPosition, dirtyRects, oldSelectedTiles, playCopy,
-            grid, gridRes, 
-            isUnSelectOld, isDrawClicked, isArrangeStep, isArranging,
-            activeRow)
+def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
+        isClick, toDraws, dirtyRects, isDrawClicked, isArrangeStep,
+        isArranging, activeRow, selectedTiles, selectedTile, oldSelectedTiles,
+        isSnapped, sidesToSnap, snapdTile, playCopy, oldPlayPosition,
+        isUnSelectOld, tiles):
+    isDrawClicked, isArrangeStep, isArranging = checkPause(canvas, mouseLoc,
+            isClick, tiles, oldPlayPosition, dirtyRects, oldSelectedTiles,
+            playCopy, grid, gridRes, isUnSelectOld, isDrawClicked,
+            isArrangeStep, isArranging, activeRow)
     now = pygame.time.get_ticks()
     if isArranging and now - canvas.lastTick >= objects.Canvas.ARRANGE_TIME:
         #foo
@@ -665,6 +676,8 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc, isClic
         #foo
         #print("in", sidesToSnap)
         #print("acriverow", activeRow)
+        #for row in groupGrid.grid:
+            #print("groupGrid", row)
         newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
                 groupGrid)
         #print("newrow", newRow)

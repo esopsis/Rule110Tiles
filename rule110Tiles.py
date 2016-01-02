@@ -7,8 +7,8 @@ import math
 #from operator import add, sub
 #from pygame.locals import *
 pygame.init()
-WIDTH = 700
-HEIGHT = 500
+WIDTH = 1000
+HEIGHT = 700
 windowSurface = pygame.display.set_mode((WIDTH, HEIGHT))
 #import arrangers
 import objects
@@ -107,15 +107,15 @@ while(True):
     mouseLoc = pygame.mouse.get_pos()
     #print(isScrollDown, isScrollUp)
     #print(button)
-    selectedTiles, isArrangeStep, grid, gridRes, groupGrid, arrangeIndex, isArranging, \
-            activeRow, isDrag, selectedTile, fromPallet, palletBack, oldselectedTiles, \
-            isSnapped, sidesToSnap, snapdTile, playCopy, isArrange, \
-            oldPlayPosition, isUnSelectOld, snapdSide, adjSide, oldMouseLoc = \
-            misc.update(canvas, tiles, selectedTiles, mouseLoc, button,
-            isUnClick, isClick, isScrollDown, isScrollUp, isSpace,
-            isArrangeStep, grid, gridRes, groupGrid, arrangeIndex, isArranging, activeRow,
-            isDrag, selectedTile, fromPallet, palletBack, oldselectedTiles, isSnapped,
-            sidesToSnap, snapdTile, playCopy, isArrange, oldPlayPosition,
-            isUnSelectOld, snapdSide, adjSide, clock, FPS, oldMouseLoc,
-            windowSurface)
+    selectedTiles, isArrangeStep, grid, gridRes, groupGrid, arrangeIndex, \
+            isArranging, activeRow, isDrag, selectedTile, fromPallet, \
+            palletBack, oldselectedTiles, isSnapped, sidesToSnap, snapdTile, \
+            playCopy, isArrange, oldPlayPosition, isUnSelectOld, snapdSide, \
+            adjSide, oldMouseLoc = misc.update(canvas, tiles, selectedTiles,
+            mouseLoc, button, isUnClick, isClick, isScrollDown, isScrollUp,
+            isSpace, isArrangeStep, grid, gridRes, groupGrid, arrangeIndex,
+            isArranging, activeRow, isDrag, selectedTile, fromPallet,
+            palletBack, oldselectedTiles, isSnapped, sidesToSnap, snapdTile,
+            playCopy, isArrange, oldPlayPosition, isUnSelectOld, snapdSide,
+            adjSide, clock, FPS, oldMouseLoc, windowSurface)
     isScrollDown = isScrollUp = False

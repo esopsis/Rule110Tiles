@@ -56,10 +56,10 @@ def checkPallet(canvas, tiles, mouseLoc, isDrag, selectedTile, fromPallet):
     return isDrag, selectedTile, fromPallet
 
 def checkTrash(canvas, tiles, selectedTiles, oldPositions, isUnClick,
-            dirtyRects, selectedTile, oldSelectedTiles, playCopy, grid, gridRes, palletBack,
-            isUnSelectOld, isDeleted, windowSurface):
-    if selectedTile is not None and (selectedTile.isToDel or
-            (canvas.isRDown or not selectedTile.isSnapped())):
+        dirtyRects, selectedTile, oldSelectedTiles, playCopy, grid, gridRes,
+        palletBack, isUnSelectOld, isDeleted, windowSurface):
+    if selectedTile is not None and (selectedTile.isToDel or (canvas.isRDown or
+            not selectedTile.isSnapped())):
         #print("in")
     #if (self.selectedTile is not None and not (self.isLDown and
             #self.selectedTile.isSnapped)):
@@ -163,10 +163,9 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
             pygame.draw.rect(canvas.windowSurface, objects.Canvas.BACK_COLOR,
                     canvas.playIcon.getRect())
             dirtyRects.append(canvas.playIcon.getRect())
-            drawers.drawNearTiles(canvas, [playCopy,
-                    canvas.playIcon], tiles, oldPlayPosition, dirtyRects,
-                    oldSelectedTiles, playCopy, grid, gridRes, isUnSelectOld,
-                    canvas.windowSurface)
+            drawers.drawNearTiles(canvas, [playCopy, canvas.playIcon], tiles,
+                    oldPlayPosition, dirtyRects, oldSelectedTiles, playCopy,
+                    grid, gridRes, isUnSelectOld, canvas.windowSurface)
             playCopy = None
             isDrawClicked = True
             offset = (-canvas.playIcon.getRect().width *
@@ -316,8 +315,8 @@ def checkBordersSnap(canvas, mouseLoc, tilesToSnap, checkedTiles, grid,
                                             isConflict)
     return isSnapped, sidesToSnap, snapdTile, isConflict
 
-def checkClick(canvas, mouseLoc, tiles, selectedTiles, isClick,
-        isDrawClicked, isDrag, selectedTile, fromPallet, playCopy, grid, gridRes,
+def checkClick(canvas, mouseLoc, tiles, selectedTiles, isClick, isDrawClicked,
+        isDrag, selectedTile, fromPallet, playCopy, grid, gridRes,
         isUnSelectOld):
     #foo
     #print("in")
@@ -338,7 +337,8 @@ def checkClick(canvas, mouseLoc, tiles, selectedTiles, isClick,
                     mouseLoc, isDrag, selectedTile, fromPallet)
             selectedTiles, isDrag, selectedTile, isUnSelectOld = \
                     misc.setMouseOffset(canvas, tiles, selectedTiles,
-                    mouseLoc, isDrag, selectedTile, isUnSelectOld, grid, gridRes)
+                    mouseLoc, isDrag, selectedTile, isUnSelectOld, grid,
+                    gridRes)
             if selectedTile is not None:
                 isDrawClicked = True
     return (selectedTiles, isDrawClicked, isDrag, selectedTile, fromPallet,

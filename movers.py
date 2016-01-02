@@ -6,8 +6,8 @@ import objects
 import checkers
 import misc
 
-def moveUnSnap(canvas, mouseLoc, selectedTiles, selectedTile,
-        oldSelectedTiles, sidesToSnap, tiles):
+def moveUnSnap(canvas, mouseLoc, selectedTiles, selectedTile, oldSelectedTiles,
+        sidesToSnap, tiles):
     for tile in selectedTiles:
         tile.setPosition(common.mySub(mouseLoc, tile.mouseOffset))
     if canvas.isLDown:
@@ -70,9 +70,8 @@ def moveUnSnappable(canvas, mouseLoc, selectedTiles, selectedTile,
                 objects.Canvas.SNAP_DISTANCE * objects.Canvas.scale + 1):
             #print("in2")
             oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, \
-                    isUnSelectOld = moveUnSnap(canvas, mouseLoc,
-                    selectedTiles, selectedTile, oldSelectedTiles, sidesToSnap,
-                    tiles)
+                    isUnSelectOld = moveUnSnap(canvas, mouseLoc, selectedTiles,
+                    selectedTile, oldSelectedTiles, sidesToSnap, tiles)
             break
     return (oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld)
 
@@ -83,8 +82,8 @@ def noSnapMove(mouseLoc, selectedTiles):
         tile.setPosition(common.mySub(mouseLoc, tile.mouseOffset))
 
 def moveSnappable(canvas, mouseLoc, checkedTiles, selectedTiles,
-        selectedTile, palletBack, isSnapped, sidesToSnap, snapdTile, snapdSide, adjSide,
-        grid, gridRes, isArranging):
+        selectedTile, palletBack, isSnapped, sidesToSnap, snapdTile, snapdSide,
+        adjSide, grid, gridRes, isArranging):
     #adjTile = None
     #print("in")
     minDistance = objects.Canvas.SNAP_DISTANCE * objects.Canvas.scale
@@ -108,13 +107,14 @@ def moveSnappable(canvas, mouseLoc, checkedTiles, selectedTiles,
                                 #print(sideB.isSnapped)
                                 minDist, isMatch, snapdSide, adjSide = \
                                         misc.findMatch(sideA, sideB,
-                                        minDistance, isMatch, snapdSide, adjSide)
+                                        minDistance, isMatch, snapdSide,
+                                        adjSide)
     if isMatch:
         #isDrawClicked = True
         checkedTiles.append(adjSide.tile)
         #foo
         #print("in2")
-        isSnapped, snapdTile, snapdSide = misc.snapTiles(selectedTile,       
+        isSnapped, snapdTile, snapdSide = misc.snapTiles(selectedTile, 
                 snapdSide, adjSide)
         #print(selectedTile.getSmallRect(), self.palletBack)
         if selectedTile.getSmallRect().colliderect(palletBack):
@@ -125,14 +125,15 @@ def moveSnappable(canvas, mouseLoc, checkedTiles, selectedTiles,
                     misc.unSnapAll(sidesToSnap)
         else:
             isSnapped, sidesToSnap, snapdTile, isConflict = \
-                    checkers.checkBordersSnap(canvas, mouseLoc,
-                    selectedTiles, checkedTiles, grid, gridRes, True, isSnapped, sidesToSnap,
+                    checkers.checkBordersSnap(canvas, mouseLoc, selectedTiles,
+                    checkedTiles, grid, gridRes, True, isSnapped, sidesToSnap,
                     snapdTile, isArranging, selectedTiles)
         if isConflict:
             isSnapped, sidesToSnap, snapdTile, snapdSide, adjSide = \
                     moveSnappable(canvas, mouseLoc, checkedTiles,
-                    selectedTiles, selectedTile, palletBack, isSnapped, sidesToSnap,
-                    snapdTile, snapdSide, adjSide, grid, gridRes, isArranging)
+                    selectedTiles, selectedTile, palletBack, isSnapped,
+                    sidesToSnap, snapdTile, snapdSide, adjSide, grid, gridRes,
+                    isArranging)
     else:
         noSnapMove(mouseLoc, selectedTiles)
     #'''
@@ -162,8 +163,8 @@ def tryMoveAll(canvas, tiles, mouseLoc, grid, gridRes, dirtyRects, isDrawAll):
 
 def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
         dirtyRects, selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
-        snapdTile, palletBack, isUnSelectOld, snapdSide, adjSide, grid, gridRes, isArranging,
-        windowSurface):
+        snapdTile, palletBack, isUnSelectOld, snapdSide, adjSide, grid,
+        gridRes, isArranging, windowSurface):
     #oldPos = self.selectedTile.position
     #print("in")
     #foo
@@ -192,9 +193,9 @@ def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
         #foo
         #print("in2")
         oldSelectedTiles, isSnapped, sidesToSnap, snapdTile, isUnSelectOld = \
-                moveUnSnappable(canvas, mouseLoc, selectedTiles,
-                selectedTile, oldSelectedTiles, isSnapped, sidesToSnap,
-                snapdTile, isUnSelectOld, tiles)
+                moveUnSnappable(canvas, mouseLoc, selectedTiles, selectedTile,
+                oldSelectedTiles, isSnapped, sidesToSnap, snapdTile,
+                isUnSelectOld, tiles)
     elif selectedTile.isToDel:
         #foo
         #print("in3")
@@ -202,9 +203,11 @@ def moveSome(canvas, mouseLoc, tiles, selectedTiles, oldPositions, isUnClick,
     else:
         #foo
         #print("in")
+        checkedTiles = []
         isSnapped, sidesToSnap, snapdTile, snapdSide, adjSide = moveSnappable(
-                canvas, mouseLoc, [], selectedTiles, selectedTile, palletBack, isSnapped,
-                sidesToSnap, snapdTile, snapdSide, adjSide, grid, gridRes, isArranging)
+                canvas, mouseLoc, checkedTiles, selectedTiles, selectedTile,
+                palletBack, isSnapped, sidesToSnap, snapdTile, snapdSide,
+                adjSide, grid, gridRes, isArranging)
     #print(self.isSnapped, isUnClick)
     #print(type(tile.mouseOffset))
     #print(self.selectedTile.absPosition)
