@@ -226,6 +226,7 @@ class Tile:
         self.scaledImage = image
         self.absRadius = image.get_height() / 2
         '''
+        self.isAddedRowNewTile = False
         self.isMovable = isMovable
         self.gridRow = self.gridCol = None
         self.groupOffset = None

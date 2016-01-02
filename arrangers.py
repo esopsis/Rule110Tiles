@@ -344,6 +344,7 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
             if centerObject is None:
                 if rightObject is not None:
                     newTile = objects.Tile(canvas)
+                    #TODO: move the two newBin setters down
                     newTile.binary = newBin
                     newTile.matchCorner(newTile.upperRight,
                             rightObject.lower.getAbsPosition())
@@ -355,6 +356,7 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
                 newTile.upperLeft.rightSide.adjSide = \
                         centerObject.lower.rightSide
             if newTile is not None:
+                newTile.isAddedRowNewTile = True
                 #foo
                 #print("")
                 #print(newTile, newTile.position)
@@ -402,7 +404,8 @@ def generateRow(canvas, activeRow, arrangeIndex, groupGrid):
 def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
         isArranging):
-    #print(newRow, tileIndex)
+    #foo
+    #print("in", newRow, tileIndex)
     centerObject = newRow[tileIndex]
     #isStart = tileIndex == 0
     #isEnd = tileIndex == len(newRow) - 1
@@ -461,8 +464,8 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
     #TODO: Next few lines necessary?
     if image is not None:
         #if centerObject.isSnapped:
-        #isConflict = False
-        '''
+        isConflict = False
+        #'''
         if centerObject.image is not objects.Tile.delTile:
             #foo
             #print("in")
@@ -480,29 +483,27 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
                 else:
                     centerObject.scaleImage(objects.Canvas.scale)
                     toDraws.append(centerObject)
-        '''
-        #if centerObject.image is Tile.delTile:
-        centerObject.setImage(image)
-        centerObject.scaleImage(objects.Canvas.scale)
         #'''
-        #print("in", sidesToSnap)
-        #foo
-        #print(activeRow)
-        isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
-                selectedTiles = checkBordersAdd(canvas, centerObject, [],
-                activeRow[-1].tileGroup, selectedTiles, selectedTile,
-                isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
-                isArranging)
+        if centerObject.image is objects.Tile.delTile:
+            centerObject.setImage(image)
+            centerObject.scaleImage(objects.Canvas.scale)
+            isConflict, isSnapped, sidesToSnap, snapdTile, selectedTile, \
+                    selectedTiles = checkBordersAdd(canvas, centerObject, [],
+                    activeRow[-1].tileGroup, selectedTiles, selectedTile,
+                    isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
+                    isArranging)
         #print(sidesToSnap)
         #'''
         #isConflict = False
-        #if isConflict:
+        if isConflict:
             #print(newRow)
-            #newRow[newRow.index(centerObject)] = None
+            newRow[newRow.index(centerObject)] = None
             #print(newRow)
         #else:
             #self.addToPlayGroup(centerObject, activeRow)
-    return selectedTile, selectedTiles
+        #foo
+        #print("in2", newRow)
+    return isConflict, selectedTile, selectedTiles
 
 '''
 def trySetColor(self):
@@ -524,19 +525,22 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
     #for tile in newRow:
         #print("newRow", tile, tile.position)
     #print("")
+    #print("in3", newRow)
     for i in range(len(newRow)):
         #TODO: move next line down into line after that
         centerObject = newRow[i]
-        if centerObject.image is objects.Tile.delTile:
+        #TODO: Change to .isNewTile
+        if centerObject is not None and centerObject.isAddedRowNewTile:
             #foo
-            #print("in2", newRow)
-            selectedTile, selectedTiles = setColor(canvas, newRow,
+            #print("in2")
+            isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
                     isArranging)
-            #if newRow[i] is None:
-                #indecesToCheck.append(i)
-    '''
+            if newRow[i] is None:
+                indecesToCheck.append(i)
+    #print("in4", newRow)
+    #'''
     #TODO: Do I still need this neighbor checking stuff?
     neighborIndeces = []
     for i in indecesToCheck:
@@ -547,10 +551,11 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         #foo
     #print(neighborIndeces)
     for i in set(neighborIndeces):
-        if newRow[i] is not None:
+        if newRow[i] is not None and newRow[i].isAddedRowNewTile:
             isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
-                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes, isArranging)
+                    sidesToSnap, snapdTile, toDraws, tiles, grid, gridRes,
+                    isArranging)
         #assert not isConflict
     #foo
     #print(indecesToCheck)
@@ -576,7 +581,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     grid, gridRes, isArranging)
         if not isConflict:
             newRow[i] = newTile
-    '''
+    #'''
     return isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles
 #'''
 def halfSetImage(tile, image):
@@ -710,6 +715,9 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         #foo
         #print("in", self.activeRow)
         #self.activeBinRow = newBinRow
+        for myObject in activeRow:
+            if myObject is not None:
+                myObject.isAddedRowNewTile = False
         isDrawClicked = True
     else:
         isArrangeStep = False
