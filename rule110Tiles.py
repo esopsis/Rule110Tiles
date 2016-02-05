@@ -7,8 +7,8 @@ import math
 #from operator import add, sub
 #from pygame.locals import *
 pygame.init()
-WIDTH = 1000
-HEIGHT = 700
+WIDTH = 800
+HEIGHT = 600
 windowSurface = pygame.display.set_mode((WIDTH, HEIGHT))
 #import arrangers
 import objects

@@ -258,11 +258,13 @@ def checkBorderSnap(mouseLoc, sideA, sideB, checkedTiles, isDragging,
 
 def checkBorders(tiles):
     isConflict = False
+    '''
     for tile in tiles:
         for side in tile.sides:
             if side.adjSide is not None and side.color != side.adjSide.color:
                 isConflict = True
                 return isConflict
+    '''
     return isConflict
 
 def checkBordersSnap(canvas, mouseLoc, tilesToSnap, checkedTiles, grid,

@@ -50,6 +50,9 @@ def getOrDefault(array, i, default):
             return default
         return array[i]
 
+def loopGet(array, i):
+    return array[i % len(array)]
+
 def makeGrid(rows, cols, init):
     if init == "empty":
         return [[[] for j in range(cols)] for i in range(rows)]
