@@ -330,7 +330,14 @@ def isSideLoop(lOrR, offset, activeRow, canvas):
     elif lOrR == "right":
         return offsetPosition > canvas.WIDTH
 
-def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop, groupGrid):
+def fartherSide(canvas, activeRow):
+    if common.x(activeRow[0].position) > canvas.WIDTH - \
+            common.x(activeRow[len(activeRow) - 1].position):
+        return canvas.RIGHT
+    return canvas.LEFT
+
+def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
+        isRightLoop, isRightPrimeLoop, overrideDirection, groupGrid):
     #foo
     #print("arrangein", arrangeIndex)
     #TODO: only do this if there isn't already a tile in the position!!
@@ -346,14 +353,15 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop, is
     if isLeftLoop:
         start = 0
     else:
-        start = -1
-        if isLeftPrimeLoop:
+        if not overrideDirection == canvas.RIGHT:
+            start = -1
+        if isLeftPrimeLoop and not overrideDirection == canvas.RIGHT:
             end -= 1
             #print("in")
         elif isRightLoop:
             end -= 1
             #print("in")
-        elif isRightPrimeLoop:
+        elif isRightPrimeLoop and not overrideDirection == canvas.LEFT:
             start = 0
             # print("in2")
     #foo
@@ -446,8 +454,9 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop, is
     return newRow, arrangeIndex
 
 def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
-        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop, isLeftPrimeLoop,
-        isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop, grid,
+        isSnapped, sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
+        isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
+        isRightDoublePrimeLoop, overrideDirection, grid,
         gridRes, isArranging):
     #foo
     #print("in", newRow, tileIndex)
@@ -473,14 +482,16 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         rightBin = objectToBin(common.getOrDefault(newRow, tileIndex + 1,
                 None))
     #isRightLoop = False
-    if tileIndex == 0 and (isLeftPrimeLoop and not isLeftLoop or isRightLoop):
-        topBin = objectToBin(activeRow[-1])
-    else:
-        topSide = centerObject.upperLeft.rightSide.adjSide
-        if topSide is None:
-            topBin = 0
+    #if tileIndex == 0 and (isLeftPrimeLoop and not isLeftLoop or isRightLoop):
+        #topBin = objectToBin(activeRow[-1])
+    topSide = centerObject.upperLeft.rightSide.adjSide
+    if topSide is None:
+        if tileIndex == 0 and isLeftPrimeLoop or overrideDirection == canvas.LEFT:
+            topBin = objectToBin(activeRow[-1])
         else:
-            topBin = objectToBin(topSide.tile)
+            topBin = 0
+    else:
+        topBin = objectToBin(topSide.tile)
     #print(leftBin, centerBin, rightBin)
     #TODO: change equals's to is's
     image = None
@@ -565,7 +576,8 @@ def trySetColor(self):
 
 def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         sidesToSnap, snapdTile, toDraws, tiles, isArranging, isLeftLoop,
-        isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop, grid, gridRes, activeRow):
+        isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
+        isRightDoublePrimeLoop, overrideDirection, grid, gridRes, activeRow):
     indecesToCheck = []
     #foo
     #for tile in activeRow:
@@ -584,7 +596,8 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
             isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
-                    isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop, grid, gridRes, isArranging)
+                    isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
+                    isRightDoublePrimeLoop, overrideDirection, grid, gridRes, isArranging)
             if newRow[i] is None:
                 indecesToCheck.append(i)
     #print("in4", newRow)
@@ -603,7 +616,8 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
             isConflict, selectedTile, selectedTiles = setColor(canvas, newRow,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
-                    isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop, grid, gridRes, isArranging)
+                    isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
+                    isRightDoublePrimeLoop, overrideDirection, grid, gridRes, isArranging)
         #assert not isConflict
     #foo
     #print(indecesToCheck)
@@ -742,8 +756,13 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         isLeftDoublePrimeLoop = isSideLoop("left", 2, activeRow, canvas)
         isRightDoublePrimeLoop = isSideLoop("right", 2, activeRow, canvas)
         #print(isRightLoop, isRightPrimeLoop)
+        overrideDirection = None
+        if (isLeftPrimeLoop and not isLeftLoop and
+                isRightPrimeLoop and not isRightLoop):
+            overrideDirection = fartherSide(canvas, activeRow)
         newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
-                isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop, groupGrid)
+                isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop,
+                overrideDirection, groupGrid)
         #print("newrow", newRow)
         #nextRow = groupGrid.grid[arrangeIndex]
         #for i in range(len(activeRow) + 1):
@@ -751,7 +770,9 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         isSnapped, sidesToSnap, snapdTile, selectedTile, selectedTiles = \
                 setColors(canvas, newRow, selectedTiles, selectedTile,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
-                isArranging, isLeftLoop, isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop, grid, gridRes, activeRow)
+                isArranging, isLeftLoop, isLeftPrimeLoop,
+                isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop,
+                overrideDirection, grid, gridRes, activeRow)
         #side.tile.neighbors.append(side.adjSide.tile)
         #self.snapSides()
         #foo

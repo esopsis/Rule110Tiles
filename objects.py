@@ -14,6 +14,7 @@ class Canvas:
     scale = .04
     BACK_COLOR = WHITE
     LEFT = 1
+    #TODO: Change to 2?
     RIGHT = 3
     PLAY_AREA_FACTOR = .5
     ARRANGE_TIME = 480
