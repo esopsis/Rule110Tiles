@@ -269,6 +269,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick, isClick,
         fromPallet, palletBack, oldSelectedTiles, isSnapped, sidesToSnap,
         snapdTile, playCopy, isArrange, oldPlayPosition, isUnSelectOld,
         snapdSide, adjSide, clock, FPS, oldMouseLoc, windowSurface):
+    #foo
+    #print(isArranging)
     #print("grid", self.grid)
     #print("tick")
     #oldSelectedTiles = []
@@ -415,6 +417,8 @@ def update(canvas, tiles, selectedTiles, mouseLoc, button, isUnClick, isClick,
             #print(self.isDrawClicked)
             #if self.isUnSelectOld == True:
             #print("in")
+        #foo
+        #print("in", selectedTile, isDeleted)
         if isDeleted:
             selectedTile = None
         groupGrid, arrangeIndex, isArranging, activeRow, isArrange = \

@@ -1,9 +1,49 @@
+from __future__ import division
 import pygame
 import common
 import objects
 import checkers
 import drawers
 import misc
+
+#TODO: might be some issues with offset, because multiplying by widths
+#of tile is not enough as widths change
+def isOffsetOut(canvas, tile, lOrR, offset):
+    if lOrR == "left":
+        sign = -1
+    elif lOrR == "right":
+        sign = 1
+    #TODO: () instead of \
+    offsetPosition = common.x(tile.position) + sign * \
+            tile.getSmallRect().width * offset
+    if lOrR == "left":
+        return offsetPosition < 0
+    elif lOrR == "right":
+        return offsetPosition > canvas.WIDTH
+
+def halfWidthsOut(canvas):
+    adjRad = objects.Tile.ADJ_WIDTH * canvas.scale / 2
+    if x(tile.position) < 0:
+        return tile.position % adjRad
+    elif x(tile.position) > canvas.WIDTH:
+        return (x(tile.position) - canvas.WIDTH) % adjRad
+
+def removeOuts(canvas, activeRow):
+    start = end = None
+    if len(activeRow) == 1:
+        start = 0
+    else:
+        for i in range(len(activeRow)):
+            tile = activeRow[i]
+            if isOffsetOut(canvas, tile, "left", 1):
+                start = i
+                break
+    if start is not None:
+        for j in range(start, len(activeRow)):
+            tile = activeRow[j]
+            if isOffsetOut(canvas, tile, "right", 1):
+                return activeRow[start:j + 1]  
+    return []
 
 #TODO: change self.grid to grid
 def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
@@ -22,7 +62,7 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
             tiles.append(tile)
             tile.isToPlay = False
             tile.isInPlayGroup = True
-        activeRow = groupGrid.grid[0]
+        activeRow = removeOuts(canvas, removeEndNones(groupGrid.grid[0]))
         #print(activeRow)
         #self.activeTileRow = self.groupGrid[len(self.groupGrid) - 1]
         #print("grouopGrid", groupGrid)
@@ -38,16 +78,17 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
             else:
                 self.activeBinRow.append(1)
         '''
-        isArranging = True
-        #self.activeBinRow.append(0)
-        canvas.playIcon.setPause()
-        #self.playIcon.image = pygame.transform.smoothscale(
-                #self.pauseImage, (self.playIcon.image.get_width(),
-                #self.playIcon.image.get_height()))
+        if activeRow != []:
+            isArranging = True
+            #self.activeBinRow.append(0)
+            canvas.playIcon.setPause()
+            #self.playIcon.image = pygame.transform.smoothscale(
+                    #self.pauseImage, (self.playIcon.image.get_width(),
+                    #self.playIcon.image.get_height()))
+            #foo
+            #print("in", self.groupGrid)
+            arrangeIndex = 1
         isArrange = False
-        #foo
-        #print("in", self.groupGrid)
-        arrangeIndex = 1
     return groupGrid, arrangeIndex, isArranging, activeRow, isArrange
 
 def checkPause(canvas, mouseLoc, isClick, tiles, oldPlayPosition, dirtyRects,
@@ -70,21 +111,6 @@ def checkPause(canvas, mouseLoc, isClick, tiles, oldPlayPosition, dirtyRects,
             isDrawClicked = True
             isArrangeStep = isArranging = False
     return isDrawClicked, isArrangeStep, isArranging
-
-    #TODO: delete functions?
-def isSideLoop(lOrR, offset, activeRow):
-    if lOrR == "left":
-        sign = -1
-        i = 0
-    elif lOrR == "right":
-        sign = 1
-        i = len(activeRow) - 1
-    offsetPosition = canvas.x(activeRow[i].position) + \
-            sign * activeRow[i].getSmallRect().width * offset
-    if lOrR == "left":
-        return offsetPosition < 0
-    elif lOrR == "right":
-        return offsetPosition > WIDTH
 
 def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
         selectedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid,
@@ -191,7 +217,7 @@ def getEnd(array):
         if array[i] is not None:
             return i
 
-def removeWhiteEnds(activeRow):
+def removeEndNones(activeRow):
     end = getEnd(activeRow)
     for i in range(end + 1):
         if activeRow[i] is not None:
@@ -318,17 +344,10 @@ def checkMerge(myObject, activeRow, i, toDraws):
 
 def isSideLoop(lOrR, offset, activeRow, canvas):
     if lOrR == "left":
-        sign = -1
         i = 0
     elif lOrR == "right":
-        sign = 1
         i = len(activeRow) - 1
-    offsetPosition = common.x(activeRow[i].position) + sign * \
-            activeRow[i].getSmallRect().width * offset
-    if lOrR == "left":
-        return offsetPosition < 0
-    elif lOrR == "right":
-        return offsetPosition > canvas.WIDTH
+    return isOffsetOut(canvas, activeRow[i], lOrR, offset)
 
 def fartherSide(canvas, activeRow):
     if common.x(activeRow[0].position) > canvas.WIDTH - \
@@ -686,7 +705,7 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         #foo
         #print(self.activeRow)
         #TODO: This is supposed to return something?
-        activeRow = removeWhiteEnds(activeRow)
+        activeRow = removeEndNones(activeRow)
         '''
         isLeftConflict, activeRow, selectedTiles, selectedTile, isSnapped, \
                 sidesToSnap, snapdTile = checkAddLeft(canvas, activeRow,

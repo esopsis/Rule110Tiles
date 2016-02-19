@@ -175,9 +175,10 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
                         collidepoint(mouseLoc):
                     isArrange = True
                     #self.activeTileRow = tiles
-                    #foo
-                    #print("in7")
+                    #fooo
+                    print("in7")
                     selectedTile = tiles[0]
+                    #print(selectedTile)
                 elif selectedTile is not None:
                     isArrange = True
                     #self.activeRow = self.selectedTile.tilegroup
@@ -324,7 +325,7 @@ def checkClick(canvas, mouseLoc, tiles, selectedTiles, isClick, isDrawClicked,
     #print("in")
     if isClick:
         #print("isclick")
-        if (not isDrag and canvas.playIcon.getRect().collidepoint(mouseLoc)):
+        if not isDrag and canvas.playIcon.getRect().collidepoint(mouseLoc):
             #foo
             #print("in6")
             playCopy = copy.copy(canvas.playIcon)

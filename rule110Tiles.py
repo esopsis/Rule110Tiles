@@ -23,7 +23,7 @@ import misc
 #WIDTH = 1100
 #HEIGHT = 600
 
-FPS = 60
+FPS = 30
 clock = pygame.time.Clock()
 
 #rYB = pygame.image.load("rYB.png").convert_alpha()
@@ -94,6 +94,7 @@ while(True):
                 newScale = objects.Canvas.scale * RESIZE_FACT
                 if newScale >= .005:
                     objects.Canvas.scale = newScale
+        #TODO: should be mouse button up even if no PHYSICAL unclick
         elif event.type == pygame.MOUSEBUTTONUP:
             isUnClick = True
         elif event.type == pygame.KEYDOWN:
