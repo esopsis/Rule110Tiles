@@ -104,6 +104,7 @@ def drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
     '''
     if not isArrangeStep and selectedTile is not None:
         #print("in2")
+        #TODO: extend or =?
         toDraws.extend(selectedTile.tileGroup)
     if len(toDraws) > 0 or playCopy is not None:
         #foo
@@ -164,7 +165,7 @@ def draw(canvas, tiles, oldPositions, isUnClick, toDraws, dirtyRects,
         #self.drawPallet(dirtyRects)
             #dirtyRects.append(tile.getLargeRect())
         #print(self.selectedTiles)
-        drawTileGroups(canvas, tiles, oldPositions, isUnClick,toDraws,
+        drawTileGroups(canvas, tiles, oldPositions, isUnClick, toDraws,
                 dirtyRects, isArrangeStep, selectedTile, oldSelectedTiles,
                 playCopy, palletBack, grid, gridRes, isUnSelectOld,
                 windowSurface)

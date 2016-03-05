@@ -17,7 +17,7 @@ def checkPallet(canvas, tiles, mouseLoc, isDrag, selectedTile, fromPallet):
         '''
         #if tile.image == rB:
             #print(getDistance(mouseLoc, screenLocation))
-        #fooo
+        #foo
         #print(isDrag, common.isInSquare(mouseLoc, tile.position,
                 #tile.radius), common.getDistance(mouseLoc, tile.position) <
                 #tile.radius)
@@ -175,8 +175,8 @@ def checkUnclick(canvas, isUnClick, isClick, tiles, selectedTiles,
                         collidepoint(mouseLoc):
                     isArrange = True
                     #self.activeTileRow = tiles
-                    #fooo
-                    print("in7")
+                    #foo
+                    #print("in7")
                     selectedTile = tiles[0]
                     #print(selectedTile)
                 elif selectedTile is not None:
@@ -291,7 +291,7 @@ def checkBordersSnap(canvas, mouseLoc, tilesToSnap, checkedTiles, grid,
             #foo
             #print("in3")
             areasToCheck = misc.getAreasToCheck(tileA.position, grid, gridRes)
-            #print("tileA")
+            #print("tileA", tileA)
             #print("areastocheck", areasToCheck)
             for sideA in tileA.sides:
                 if not sideA.isSnapped:

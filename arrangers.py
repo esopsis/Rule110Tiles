@@ -21,12 +21,13 @@ def isOffsetOut(canvas, tile, lOrR, offset):
     elif lOrR == "right":
         return offsetPosition > canvas.WIDTH
 
-def halfWidthsOut(canvas):
-    adjRad = objects.Tile.ADJ_WIDTH * canvas.scale / 2
-    if x(tile.position) < 0:
-        return tile.position % adjRad
-    elif x(tile.position) > canvas.WIDTH:
-        return (x(tile.position) - canvas.WIDTH) % adjRad
+def halfWidthsOut(canvas, tile):
+    adjRad = canvas.scale * objects.Tile.ADJ_WIDTH/ 2
+    if common.x(tile.position) < 0:
+        return common.x(tile.position) % adjRad
+    elif common.x(tile.position) > canvas.WIDTH:
+        return (common.x(tile.position) - canvas.WIDTH) % adjRad
+    return 0
 
 def removeOuts(canvas, activeRow):
     start = end = None
@@ -62,7 +63,8 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
             tiles.append(tile)
             tile.isToPlay = False
             tile.isInPlayGroup = True
-        activeRow = removeOuts(canvas, removeEndNones(groupGrid.grid[0]))
+        activeRow = removeEndNones(groupGrid.grid[0])
+        #activeRow = removeOuts(canvas, removeEndNones(groupGrid.grid[0]))
         #print(activeRow)
         #self.activeTileRow = self.groupGrid[len(self.groupGrid) - 1]
         #print("grouopGrid", groupGrid)
@@ -115,9 +117,12 @@ def checkPause(canvas, mouseLoc, isClick, tiles, oldPlayPosition, dirtyRects,
 def checkBordersAdd(canvas, tile, checkedTiles, tileGroup, selectedTiles,
         selectedTile, isSnapped, sidesToSnap, snapdTile, toDraws, tiles, grid,
         gridRes, isArranging):
+    #print(tiles)
+    #print("in", isConflict)
     isSnapped, sidesToSnap, snapdTile, isConflict = checkers.checkBordersSnap(
             canvas, None, [tile], checkedTiles, grid, gridRes, False,
             isSnapped, sidesToSnap, snapdTile, isArranging, selectedTiles)
+    #print("in2", isConflict)
     if isConflict:
         tile.setImage(objects.TileSet.w)
         tile.scaleImage(objects.Canvas.scale)
@@ -369,24 +374,33 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
         #print("activeRow", tile, tile.position)
     #print("in2")
     end = len(activeRow)
-    if isLeftLoop:
+    #if isLeftLoop:
+    if -2 <= halfWidthsOut(canvas, activeRow[0]) < 0:
         start = 0
+        #print("in")
     else:
         if not overrideDirection == canvas.RIGHT:
             start = -1
-        if isLeftPrimeLoop and not overrideDirection == canvas.RIGHT:
+        #if isLeftPrimeLoop and not overrideDirection == canvas.RIGHT:
+        if (-3 <= halfWidthsOut(canvas, activeRow[0]) < 0 and not
+                overrideDirection == canvas.RIGHT):
             end -= 1
             #print("in")
-        elif isRightLoop:
+        #elif isRightLoop:
+        elif 0 < halfWidthsOut(canvas, activeRow[-1]) <= 2:
             end -= 1
             #print("in")
-        elif isRightPrimeLoop and not overrideDirection == canvas.LEFT:
+        #elif isRightPrimeLoop and not overrideDirection == canvas.LEFT:
+        elif (0 < halfWidthsOut(canvas, activeRow[-1]) <= 3 and not
+              overrideDirection == canvas.LEFT):
             start = 0
             # print("in2")
     #foo
     #print(start, end)
     for i in range(start, end):
-        if isLeftPrimeLoop or isRightPrimeLoop:
+        #if isLeftPrimeLoop or isRightPrimeLoop:
+        if (-3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
+                0 < halfWidthsOut(canvas, activeRow[-1]) <= 3):
             leftObject = common.loopGet(activeRow, i - 1)
             centerObject = common.loopGet(activeRow, i)
             rightObject = common.loopGet(activeRow, i + 1)
@@ -408,7 +422,8 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
             if i == -1:
                 newTile = objects.Tile(canvas)
                 newTile.binary = newBin
-                if isLeftLoop:
+                #if isLeftLoop:
+                if -2 <= halfWidthsOut(canvas, activeRow[0]) < 0:
                     newTile.matchCorner(newTile.upperLeft, centerObject.lower.getAbsPosition())
                 else:
                     newTile.matchCorner(newTile.upperRight, rightObject.lower.getAbsPosition())
@@ -493,7 +508,9 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         isRight = True
     '''
     centerBin = objectToBin(centerObject)
-    if isLeftDoublePrimeLoop or isRightDoublePrimeLoop:
+    #if isLeftDoublePrimeLoop or isRightDoublePrimeLoop:
+    if (-4 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
+                0 < halfWidthsOut(canvas, activeRow[-1]) <= 4):
         leftBin = objectToBin(common.loopGet(newRow, tileIndex - 1))
         rightBin = objectToBin(common.loopGet(newRow, tileIndex + 1))
     else:
@@ -505,7 +522,10 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         #topBin = objectToBin(activeRow[-1])
     topSide = centerObject.upperLeft.rightSide.adjSide
     if topSide is None:
-        if tileIndex == 0 and isLeftPrimeLoop or overrideDirection == canvas.LEFT:
+        #if (tileIndex == 0 and isLeftPrimeLoop or
+                    #overrideDirection == canvas.LEFT):
+        if (tileIndex == 0 and -3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
+                overrideDirection == canvas.LEFT):
             topBin = objectToBin(activeRow[-1])
         else:
             topBin = 0
@@ -561,6 +581,7 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
                 else:
                     centerObject.scaleImage(objects.Canvas.scale)
                     toDraws.append(centerObject)
+        #print(isConflict)
         #'''
         if centerObject.image is objects.Tile.delTile:
             centerObject.setImage(image)
@@ -573,6 +594,7 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         #print(sidesToSnap)
         #'''
         #isConflict = False
+        #foo
         if isConflict:
             #print(newRow)
             newRow[newRow.index(centerObject)] = None
@@ -623,11 +645,14 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
     #'''
     #TODO: Do I still need this neighbor checking stuff?
     neighborIndeces = []
+    #foo
     for i in indecesToCheck:
         if i - 1 > 0:
             neighborIndeces.append(i - 1)
+            #print("in", i)
         if i + 1 < len(newRow) - 1:
             neighborIndeces.append(i + 1)
+            #print("in2", i, newRow)
         #foo
     #print(neighborIndeces)
     for i in set(neighborIndeces):
@@ -639,7 +664,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     isRightDoublePrimeLoop, overrideDirection, grid, gridRes, isArranging)
         #assert not isConflict
     #foo
-    #print(indecesToCheck)
+    #print(newRow, indecesToCheck)
     #print("in2", newRow)
     for i in indecesToCheck:
         myObject = newRow[i]
@@ -683,6 +708,7 @@ def tryFinishSetImages(tiles, toDraws):
     return toDraws
 
 def isRightCloser(self):
+    # try parens instead of \
     return x(self.activeTileRow[0].position) > WIDTH - \
             x(self.activeTileRow[len(self.activeTileRow) - 1].position)
 
@@ -768,20 +794,25 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         #print("acriverow", activeRow)
         #for row in groupGrid.grid:
             #print("groupGrid", row)
+        #'''
         isLeftLoop = isSideLoop("left", 1, activeRow, canvas)
         isRightLoop = isSideLoop("right", 1, activeRow, canvas)
         isLeftPrimeLoop = isSideLoop("left", 1.5, activeRow, canvas)
         isRightPrimeLoop = isSideLoop("right", 1.5, activeRow, canvas)
         isLeftDoublePrimeLoop = isSideLoop("left", 2, activeRow, canvas)
         isRightDoublePrimeLoop = isSideLoop("right", 2, activeRow, canvas)
+        #'''
         #print(isRightLoop, isRightPrimeLoop)
         overrideDirection = None
-        if (isLeftPrimeLoop and not isLeftLoop and
-                isRightPrimeLoop and not isRightLoop):
+        #if (isLeftPrimeLoop and not isLeftLoop and
+                #isRightPrimeLoop and not isRightLoop):
+        if (-3 <= halfWidthsOut(canvas, activeRow[0]) <= -2 or
+                2 <= halfWidthsOut(canvas, activeRow[-1]) <= 3):
             overrideDirection = fartherSide(canvas, activeRow)
         newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
                 isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop,
                 overrideDirection, groupGrid)
+        #foo
         #print("newrow", newRow)
         #nextRow = groupGrid.grid[arrangeIndex]
         #for i in range(len(activeRow) + 1):
