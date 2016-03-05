@@ -15,7 +15,7 @@ class Canvas:
     RIGHT = 3
     PLAY_AREA_FACTOR = .5
 
-    def __init__(self, tiles, windowSurface):
+    def __init__(self, windowSurface):
         self.windowSurface = windowSurface
         self.WIDTH = windowSurface.get_width()
         self.HEIGHT = windowSurface.get_height()

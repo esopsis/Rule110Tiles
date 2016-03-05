@@ -29,10 +29,6 @@ RESIZE_FACT = .9
 MAX_SCALE = 1
 MIN_SCALE = .005
 
-# Tiles keeps track of tiles, with tiles at the top layer at the end of
-# the list, and tiles at the bottom at the beginning of the list
-tiles = []
-
 # isSnapped refers to whether or not two groups of tiles currently
 # appear snaped together
 isScrollUp = isScrollDown = isDrag = isMouseDown = isLDown = isRDown = \
@@ -51,7 +47,13 @@ selectedTiles = []
 # sidesToSnap keeps track of tiles which can potentially be merged
 # into one snapped together group if the mouse is unclicked
 sidesToSnap = []
-myCanvas = objects.Canvas(tiles, windowSurface)
+myCanvas = objects.Canvas(windowSurface)
+# Tiles keeps track of tiles, with tiles at the top layer at the end of
+# the list, and tiles at the bottom at the beginning of the list
+startTile = objects.Tile(myCanvas, objects.TileSet.rYB)
+startTile.setPosition((WIDTH / 2, HEIGHT / 2))
+tiles = [startTile]
+#print(tiles)
 # Sets up a grid which is used to only update tiles near the tiles
 # currently being modified.
 grid, gridRes = misc.setGrid(myCanvas, tiles)
@@ -61,8 +63,10 @@ palletBack = misc.resizePalletBack(myCanvas)
 # Draws the tile pallet, along with any tiles specified by the variable
 # "tiles"
 drawers.initDraw(myCanvas, tiles, palletBack, windowSurface)
+isComputerTurn = True
+inPlay = tiles
 # Run loop
-while(True):
+while(True):               
     isClick = isUnClick = False
     button = None
     # Check for mouse clicks and unclicks
@@ -92,11 +96,11 @@ while(True):
     # Get mouse location
     mouseLoc = pygame.mouse.get_pos()
     # Updates the scene
-    selectedTiles, grid, gridRes, isDrag, selectedTile, \
-            palletBack, isSnapped, sidesToSnap, snapdTile, \
-            snapdSide, adjSide, oldMouseLoc = misc.update(myCanvas, tiles,
-            selectedTiles, mouseLoc, button, isUnClick, isClick, isScrollDown,
-            isScrollUp, grid, gridRes, isDrag, selectedTile,
-            palletBack, isSnapped, sidesToSnap, snapdTile,
-            snapdSide, adjSide, clock, FPS, oldMouseLoc, windowSurface)
+    inPlay, selectedTiles, grid, gridRes, isDrag, selectedTile, palletBack, \
+            isSnapped, sidesToSnap, snapdTile, snapdSide, adjSide, \
+            oldMouseLoc, isComputerTurn = misc.update(myCanvas, inPlay, tiles,
+            selectedTiles, mouseLoc, button, isUnClick, isClick, isScrollDown, isScrollUp,
+            grid, gridRes, isDrag, selectedTile, palletBack, isSnapped,
+            sidesToSnap, snapdTile, snapdSide, adjSide, isComputerTurn, clock, FPS,
+            oldMouseLoc, windowSurface)
     isScrollDown = isScrollUp = False

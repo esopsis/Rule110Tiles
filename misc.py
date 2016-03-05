@@ -6,6 +6,7 @@ import common
 import checkers
 import drawers
 import movers
+import game
 
 def load(image):
     return common.load(os.path.join("images", image))
@@ -184,10 +185,11 @@ def addAreas(myCanvas, position, areasToCheck, grid, gridRes):
             areasToCheck.append(area)
 
 # For updating the scene
-def update(myCanvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
+def update(myCanvas, inPlay, tiles, selectedTiles, mouseLoc, button, isUnClick,
         isClick, isScrollDown, isScrollUp, grid, gridRes,
         isDrag, selectedTile, palletBack, isSnapped, sidesToSnap,
-        snapdTile, snapdSide, adjSide, clock, FPS, oldMouseLoc, windowSurface):
+        snapdTile, snapdSide, adjSide, isComputerTurn,
+        clock, FPS, oldMouseLoc, windowSurface):
     # oldPositions keeps track of where tiles were before they were moved
     oldPositions = []
     # dirtyRects keeps track of parts of the screen that need to be
@@ -208,72 +210,80 @@ def update(myCanvas, tiles, selectedTiles, mouseLoc, button, isUnClick,
         elif button == myCanvas.LEFT:
             myCanvas.isLDown = True
             myCanvas.isMouseDown = True
-    clock.tick(FPS)
     # isDeleted is set to true when one or more tiles has been deleted
     # on the current step
     isDeleted = False
-    # This function resizes the display if the user is scrolling
-    grid, gridRes, palletBack, isDrawAll = scrollSize(myCanvas, tiles, grid,
-            gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
-            isDrawAll, windowSurface)
-    # This function checks if the user has clicked on the tile pallet.
-    # If so, a tile is chosen from the pallet.  It also checks if the
-    # user has clicked on a tile already on the canvas.  Either way it
-    # sets the mouseOffset attribute for all of the selected tiles, which
-    # hold the distance between the center of the tile and the mouse
-    # location.  Right mouse clicks chose tile groups, left clicks
-    # choose individual tiles.  Generally this gets the tiles ready to be
-    # moved.
-    selectedTiles, isDrawClicked, isDrag, selectedTile, = \
-            checkers.checkClick(myCanvas, mouseLoc, tiles, selectedTiles,
-            isClick, isDrawClicked, isDrag, selectedTile, grid,
-            gridRes)
-    # Checks if the mouse has unclicked, and if so, sets up tile groups
-    # such that any snapped tiles are now in the same group.
-    # Also changes which part of the tile grid they are now a part of.
-    isDrawClicked, selectedTile, isSnapped, sidesToSnap, \
-            snapdTile, snapdSide = checkers.checkUnclick(myCanvas, isUnClick,
-            isClick, tiles, selectedTiles, isDrawClicked, oldPositions,
-            dirtyRects, selectedTile, isSnapped, sidesToSnap,
-            snapdTile, grid, gridRes, snapdSide)
-    # Checks if tiles are currently over the tile pallet, and sets them
-    # to turn red if and only if they are over it.  If there has been an
-    # unclick and the tiles are over the pallet, they are deleted
-    isDeleted = checkers.checkTrash(myCanvas, tiles, selectedTiles,
-            oldPositions, isUnClick, dirtyRects, selectedTile, grid, gridRes,
-            palletBack, isDeleted, windowSurface)
-    #Sets the mouse offset on all the tiles if the background is dragged
-    if not isDrag and isClick:
-        for tile in tiles:
-            tile.mouseOffset = common.mySub(mouseLoc, tile.position)
-    # Things in this block only evaluate if there is both a mouse click,
-    # and mouse movement since the last update
-    if myCanvas.isMouseDown and mouseLoc != oldMouseLoc:
-        # If a tile or tiles is being dragged, this determines where
-        # they should be moved and also snaps or unsnaps them from other
-        # tiles
-        if isDrag:
-            isDrawClicked, isSnapped, sidesToSnap, snapdTile, snapdSide, \
-                    adjSide = movers.moveSome(myCanvas, mouseLoc, tiles,
-                    selectedTiles, oldPositions, isUnClick, dirtyRects,
-                    selectedTile, isSnapped, sidesToSnap, snapdTile,
-                    palletBack, snapdSide, adjSide, grid, gridRes,
-                    windowSurface)
-        # This only evaluates if the background is being dragged and there
-        # are one or more tiles.  It moves all of the movable tiles.
-        elif len(tiles) > 0:
-            isDrawAll = movers.moveAll(myCanvas, mouseLoc, tiles, grid,
-                    gridRes, dirtyRects, isDrawAll, windowSurface)
+    toDraws = []
+    if isComputerTurn:
+        inPlay, selectedTiles, selectedTile, isSnapped, sidesToSnap, \
+                snapdTile = game.computerPlay(myCanvas, inPlay,
+                selectedTiles, selectedTile, isSnapped, sidesToSnap, snapdTile,
+                tiles, toDraws, grid, gridRes)
+        clock.tick(1)
+    else:
+        clock.tick(FPS)
+        # This function resizes the display if the user is scrolling
+        grid, gridRes, palletBack, isDrawAll = scrollSize(myCanvas, tiles, grid,
+                gridRes, palletBack, isScrollDown, isScrollUp, dirtyRects,
+                isDrawAll, windowSurface)
+        # This function checks if the user has clicked on the tile pallet.
+        # If so, a tile is chosen from the pallet.  It also checks if the
+        # user has clicked on a tile already on the canvas.  Either way it
+        # sets the mouseOffset attribute for all of the selected tiles, which
+        # hold the distance between the center of the tile and the mouse
+        # location.  Right mouse clicks chose tile groups, left clicks
+        # choose individual tiles.  Generally this gets the tiles ready to be
+        # moved.
+        selectedTiles, isDrawClicked, isDrag, selectedTile, = \
+                checkers.checkClick(myCanvas, mouseLoc, tiles, selectedTiles,
+                isClick, isDrawClicked, isDrag, selectedTile, grid,
+                gridRes)
+        # Checks if the mouse has unclicked, and if so, sets up tile groups
+        # such that any snapped tiles are now in the same group.
+        # Also changes which part of the tile grid they are now a part of.
+        isDrawClicked, selectedTile, isSnapped, sidesToSnap, \
+                snapdTile, snapdSide = checkers.checkUnclick(myCanvas, isUnClick,
+                isClick, tiles, selectedTiles, isDrawClicked, oldPositions,
+                dirtyRects, selectedTile, isSnapped, sidesToSnap,
+                snapdTile, grid, gridRes, snapdSide)
+        # Checks if tiles are currently over the tile pallet, and sets them
+        # to turn red if and only if they are over it.  If there has been an
+        # unclick and the tiles are over the pallet, they are deleted
+        isDeleted = checkers.checkTrash(myCanvas, tiles, selectedTiles,
+                oldPositions, isUnClick, dirtyRects, selectedTile, grid, gridRes,
+                palletBack, isDeleted, windowSurface)
+        #Sets the mouse offset on all the tiles if the background is dragged
+        if not isDrag and isClick:
+            for tile in tiles:
+                tile.mouseOffset = common.mySub(mouseLoc, tile.position)
+        # Things in this block only evaluate if there is both a mouse click,
+        # and mouse movement since the last update
+        if myCanvas.isMouseDown and mouseLoc != oldMouseLoc:
+            # If a tile or tiles is being dragged, this determines where
+            # they should be moved and also snaps or unsnaps them from other
+            # tiles
+            if isDrag:
+                isDrawClicked, isSnapped, sidesToSnap, snapdTile, snapdSide, \
+                        adjSide = movers.moveSome(myCanvas, mouseLoc, tiles,
+                        selectedTiles, oldPositions, isUnClick, dirtyRects,
+                        selectedTile, isSnapped, sidesToSnap, snapdTile,
+                        palletBack, snapdSide, adjSide, grid, gridRes,
+                        windowSurface)
+            # This only evaluates if the background is being dragged and there
+            # are one or more tiles.  It moves all of the movable tiles.
+            elif len(tiles) > 0:
+                isDrawAll = movers.moveAll(myCanvas, mouseLoc, tiles, grid,
+                        gridRes, dirtyRects, isDrawAll, windowSurface)
     if isDeleted:
         selectedTile = None
     # Draws tiles which need to be drawn
     if isDrawClicked or isDrawAll:
-        drawers.draw(myCanvas, tiles, oldPositions, isUnClick,
+        drawers.draw(myCanvas, tiles, toDraws, oldPositions, isUnClick,
                 dirtyRects, isDrawClicked, isDrawAll, selectedTile, palletBack,
-                grid, gridRes, windowSurface)
+                isComputerPlay, grid, gridRes, windowSurface)
     if isUnClick:
         selectedTile = None
     oldMouseLoc = mouseLoc
-    return (selectedTiles, grid, gridRes, isDrag, selectedTile,
+    return (inPlay, selectedTiles, grid, gridRes, isDrag, selectedTile,
             palletBack, isSnapped, sidesToSnap, snapdTile,
-            snapdSide, adjSide, oldMouseLoc)
+            snapdSide, adjSide, oldMouseLoc, isComputerTurn)

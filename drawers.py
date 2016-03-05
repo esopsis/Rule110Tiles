@@ -46,10 +46,13 @@ def drawPallet(myCanvas, palletBack, dirtyRects, windowSurface):
 
 # Draws groups of tiles in their new positions, and also draws any tiles
 # which were behind those groups
-def drawTileGroups(myCanvas, tiles, oldPositions, isUnClick,
-        dirtyRects, selectedTile, palletBack, grid, gridRes, windowSurface):
-    if selectedTile is not None:
-        toDraws = selectedTile.tileGroup
+def drawTileGroups(myCanvas, tiles, toDraws, oldPositions, isUnClick,
+        dirtyRects, selectedTile, palletBack, isComputerPlay,
+        grid, gridRes, windowSurface):
+    if not isComputerPlay and selectedTile is not None:
+        #TODO: extend or =?
+        toDraws.extend(selectedTile.tileGroup)
+    if len(toDraws) > 0:
         for tile in toDraws:
             tile.scalePosition(objects.Canvas.scale)
         # Draws any tiles which are behind moved tiles
@@ -63,13 +66,13 @@ def drawTileGroups(myCanvas, tiles, oldPositions, isUnClick,
             dirtyRects.append(tile.getRect())
 
 # Draws tiles
-def draw(myCanvas, tiles, oldPositions, isUnClick, dirtyRects,
-        isDrawClicked, isDrawAll, selectedTile, palletBack, grid, gridRes,
-        windowSurface):
+def draw(myCanvas, tiles, toDraws, oldPositions, isUnClick, dirtyRects,
+        isDrawClicked, isDrawAll, selectedTile, palletBack, isComputerPlay,
+        grid, gridRes, windowSurface):
     # Draws groups of tiles in their new positions, and also draws any
     # tiles which were behind those groups
     if isDrawClicked:
-        drawTileGroups(myCanvas, tiles, oldPositions, isUnClick,
+        drawTileGroups(myCanvas, tiles, toDraws, oldPositions, isUnClick,
                 dirtyRects, selectedTile, palletBack, grid, gridRes,
                 windowSurface)
         # If the user unclicks, the tile pallet is re-drawn over
