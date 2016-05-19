@@ -1,1 +1,1 @@
-print(3 > None)
+print(-1.5 // 1)

@@ -89,9 +89,6 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
             else:
                 self.activeBinRow.append(1)
         '''
-        for tile in activeRow:
-            if halfWidthsFromLeft(canvas, tile) < 0:
-                pass
         if activeRow != []:
             isArranging = True
             #self.activeBinRow.append(0)
@@ -399,19 +396,19 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
         #if isLeftPrimeLoop and not overrideDirection == canvas.RIGHT:
         #if (-3 <= halfWidthsOut(canvas, activeRow[0]) < 0 and not
                 #overrideDirection == canvas.RIGHT):
-        if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 3 and not
+        if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 2 and not
                 overrideDirection == canvas.RIGHT):
             end -= 1
             #print("in")
         #elif isRightLoop:
         #elif 0 < halfWidthsOut(canvas, activeRow[-1]) <= 2:
-        elif 0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 2: 
+        if 0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 2: 
             end -= 1
             #print("in")
         #elif isRightPrimeLoop and not overrideDirection == canvas.LEFT:
         #elif (0 < halfWidthsOut(canvas, activeRow[-1]) <= 3 and not
               #overrideDirection == canvas.LEFT):
-        elif (0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 3 and not
+        if (0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 2 and not
               overrideDirection == canvas.LEFT):
             start = 0
             # print("in2")
@@ -421,8 +418,8 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
         #if isLeftPrimeLoop or isRightPrimeLoop:
         #if (-3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
                 #0 < halfWidthsOut(canvas, activeRow[-1]) <= 3):
-        if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 3 or
-                0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 3):
+        if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+                0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 2):
             leftObject = common.loopGet(activeRow, i - 1)
             centerObject = common.loopGet(activeRow, i)
             rightObject = common.loopGet(activeRow, i + 1)
@@ -447,9 +444,11 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
                 #if isLeftLoop:
                 #if -2 <= halfWidthsOut(canvas, activeRow[0]) < 0:
                 if 0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 2:
-                    newTile.matchCorner(newTile.upperLeft, centerObject.lower.getAbsPosition())
+                    newTile.matchCorner(newTile.upperLeft,
+                            centerObject.lower.getAbsPosition())
                 else:
-                    newTile.matchCorner(newTile.upperRight, rightObject.lower.getAbsPosition())
+                    newTile.matchCorner(newTile.upperRight,
+                            rightObject.lower.getAbsPosition())
             elif centerObject is None:
                 if rightObject is not None:
                     newTile = objects.Tile(canvas)
@@ -534,8 +533,8 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
     #if isLeftDoublePrimeLoop or isRightDoublePrimeLoop:
     #if (-4 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
             #0 < halfWidthsOut(canvas, activeRow[-1]) <= 4):
-    if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 4 or
-            0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 4):
+    if (0 < halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+            0 < halfWidthsFromRight(canvas, activeRow[-1]) <= 2):
         leftBin = objectToBin(common.loopGet(newRow, tileIndex - 1))
         rightBin = objectToBin(common.loopGet(newRow, tileIndex + 1))
     else:
@@ -552,7 +551,7 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         #if (tileIndex == 0 and -3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
                 #overrideDirection == canvas.LEFT):
         if (tileIndex == 0 and 0 < halfWidthsFromLeft(canvas, activeRow[0]) <=
-                3 or overrideDirection == canvas.LEFT):
+                2 or overrideDirection == canvas.LEFT):
             topBin = objectToBin(activeRow[-1])
         else:
             topBin = 0
@@ -839,8 +838,8 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
                 #isRightPrimeLoop and not isRightLoop):
         #if (-3 <= halfWidthsOut(canvas, activeRow[0]) <= -2 or
                 #2 <= halfWidthsOut(canvas, activeRow[-1]) <= 3):
-        if (2 <= halfWidthsFromLeft(canvas, activeRow[0]) <= 3 or
-                2 < halfWidthsFromRight(canvas, activeRow[-1]) < 3):
+        if (1 <= halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+                1 < halfWidthsFromRight(canvas, activeRow[-1]) < 2):
             overrideDirection = fartherSide(canvas, activeRow)
         newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
                 isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop,
