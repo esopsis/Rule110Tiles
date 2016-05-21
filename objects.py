@@ -495,6 +495,7 @@ class Tile:
                     (tile.adjWidth / 2, tile.adjHeight / 2)))
         #print("in2", self.position)
 
+    #TODO: use getSide more elsewhere
     def getSide(self, myType):
         return self.sideOptions[myType]
 
