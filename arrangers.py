@@ -93,7 +93,10 @@ def checkArrangeInit(canvas, arrangeIndex, isArranging, activeRow,
         for tile in activeRow:
             if halfWidthsFromLeft(canvas, tile) < 0:
                 pass
-        if activeRow != []:
+        #TODO: Do I really have to check that activeRow != []?
+        if not (activeRow == [] or len(activeRow) == 1 and
+                halfWidthsFromLeft(canvas, tile) <= 1 and
+                halfWidthsFromRight(canvas, tile) <= 1):
             isArranging = True
             #self.activeBinRow.append(0)
             canvas.playIcon.setPause()
@@ -370,11 +373,11 @@ def isSideLoop(lOrR, offset, activeRow, canvas):
 def fartherSide(canvas, activeRow):
     if common.x(activeRow[0].position) > canvas.WIDTH - \
             common.x(activeRow[len(activeRow) - 1].position):
-        return canvas.RIGHT
-    return canvas.LEFT
+        return canvas.LEFT
+    return canvas.RIGHT
 
 def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
-        isRightLoop, isRightPrimeLoop, overrideDirection, groupGrid):
+        isRightLoop, isRightPrimeLoop, overrideDirection, isLoopedEdges, groupGrid):
     #foo
     #print("arrangein", arrangeIndex)
     #TODO: only do this if there isn't already a tile in the position!!
@@ -395,17 +398,19 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
     #print("halfwidths", halfWidthsFromLeft(canvas, activeRow[0])
     start = -1
     #fooo
-    if (halfWidthsFromLeft(canvas, activeRow[0]) == 1 or
-            halfWidthsFromRight(canvas, activeRow[-1]) == 2 or
+    if ((not overrideDirection == canvas.LEFT and
+            (halfWidthsFromLeft(canvas, activeRow[0]) == 1 or
+            halfWidthsFromRight(canvas, activeRow[-1]) == 2)) or
             overrideDirection == canvas.RIGHT):
         start = 0
         print("in")
     #print("halfwidthsright", halfWidthsFromRight(canvas, activeRow[-1]))
     #print(overrideDirection == canvas.LEFT)
-    if (halfWidthsFromRight(canvas, activeRow[-1]) == 1 or
-            halfWidthsFromLeft(canvas, activeRow[0]) == 2 or
+    if ((not overrideDirection == canvas.RIGHT and
+            (halfWidthsFromRight(canvas, activeRow[-1]) == 1 or
+            halfWidthsFromLeft(canvas, activeRow[0]) == 2)) or
             overrideDirection == canvas.LEFT):
-        end = -1
+        end -= 1
         print("in2")
     '''
     else:
@@ -437,8 +442,9 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
         #if isLeftPrimeLoop or isRightPrimeLoop:
         #if (-3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
                 #0 < halfWidthsOut(canvas, activeRow[-1]) <= 3):
-        if (halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
-                halfWidthsFromRight(canvas, activeRow[-1]) <= 2):
+        if ((halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+                halfWidthsFromRight(canvas, activeRow[-1]) <= 2) and
+                isLoopedEdges):
             leftObject = common.loopGet(activeRow, i - 1)
             centerObject = common.loopGet(activeRow, i)
             rightObject = common.loopGet(activeRow, i + 1)
@@ -449,8 +455,8 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
         leftBin = objectToBin(leftObject)
         centerBin = objectToBin(centerObject)
         rightBin = objectToBin(rightObject)
-        #foo
-        #print("in7", leftBin, centerBin, rightBin)
+        #fooo
+        print("in7", leftBin, centerBin, rightBin)
         newBin = (canvas.rules["".join(map(str, [leftBin, centerBin,
                 rightBin]))])
         #print(newBin)
@@ -532,7 +538,7 @@ def generateRow(canvas, activeRow, arrangeIndex, isLeftLoop, isLeftPrimeLoop,
 def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
         isSnapped, sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
         isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
-        isRightDoublePrimeLoop, overrideDirection, grid,
+        isRightDoublePrimeLoop, overrideDirection, isLoopedEdges, grid,
         gridRes, isArranging):
     #foo
     #print("in", newRow, tileIndex)
@@ -554,7 +560,15 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
     #if (-4 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
             #0 < halfWidthsOut(canvas, activeRow[-1]) <= 4):
     #TODO: maybe switch from activerow to newrow?
-    if (halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+    #fooo
+    #print("setColorStuff", halfWidthsFromLeft(canvas, activeRow[0]),
+        #halfWidthsFromRight(canvas, activeRow[-1]), isLoopedEdges)
+    #erase "halfWidthsFromLeft(canvas, activeRow[0]) == 3 or
+    #halfWidthsFromRight(canvas, activeRow[-1]) == 3) and  not
+    #isLoopedEdges or" to loop later in evolution.
+    if ((halfWidthsFromLeft(canvas, activeRow[0]) == 3 or
+        halfWidthsFromRight(canvas, activeRow[-1]) == 3) and  not
+        isLoopedEdges or halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
             halfWidthsFromRight(canvas, activeRow[-1]) <= 2):
         leftBin = objectToBin(common.loopGet(newRow, tileIndex - 1))
         rightBin = objectToBin(common.loopGet(newRow, tileIndex + 1))
@@ -571,15 +585,15 @@ def setColor(canvas, newRow, tileIndex, activeRow, selectedTiles, selectedTile,
                     #overrideDirection == canvas.LEFT):
         #if (tileIndex == 0 and -3 <= halfWidthsOut(canvas, activeRow[0]) < 0 or
                 #overrideDirection == canvas.LEFT):
-        if (tileIndex == 0 and halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
-                overrideDirection == canvas.RIGHT):
-            topBin = objectToBin(activeRow[-1])
-        else:
-            topBin = 0
+        #if (tileIndex == 0 and halfWidthsFromLeft(canvas, activeRow[0]) <= 2 or
+                #overrideDirection == canvas.RIGHT):
+            #topBin = objectToBin(activeRow[-1])
+        #else:
+        topBin = 0
     else:
         topBin = objectToBin(topSide.tile)
-    if tileIndex == 0:
-        print(leftBin, centerBin, rightBin, topBin)
+    #fooo
+    print("tileIndex", tileIndex, leftBin, centerBin, rightBin, topBin)
     #TODO: change equals's to is's
     image = None
     if centerBin:
@@ -668,7 +682,7 @@ def trySetColor(self):
 def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
         sidesToSnap, snapdTile, toDraws, tiles, isArranging, isLeftLoop,
         isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
-        isRightDoublePrimeLoop, overrideDirection, grid, gridRes, activeRow):
+        isRightDoublePrimeLoop, overrideDirection, isLoopedEdges, grid, gridRes, activeRow):
     indecesToCheck = []
     #fooo
     #for tile in activeRow:
@@ -688,7 +702,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
                     isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
-                    isRightDoublePrimeLoop, overrideDirection, grid, gridRes,
+                    isRightDoublePrimeLoop, overrideDirection, isLoopedEdges, grid, gridRes,
                     isArranging)
             if newRow[i] is None:
                 #fooo
@@ -714,7 +728,7 @@ def setColors(canvas, newRow, selectedTiles, selectedTile, isSnapped,
                     i, activeRow, selectedTiles, selectedTile, isSnapped,
                     sidesToSnap, snapdTile, toDraws, tiles, isLeftLoop,
                     isLeftPrimeLoop, isLeftDoublePrimeLoop, isRightLoop,
-                    isRightDoublePrimeLoop, overrideDirection, grid, gridRes,
+                    isRightDoublePrimeLoop, overrideDirection, isLoopedEdges, grid, gridRes,
                     isArranging)
         #assert not isConflict
     #foo
@@ -866,12 +880,17 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
         print(halfWidthsFromLeft(canvas, activeRow[0]))
         if (halfWidthsFromLeft(canvas, activeRow[0]) == 2 and
                 halfWidthsFromRight(canvas, activeRow[-1]) == 2):
-            #fooo
-            print("in4")
+            #foo
+            #print("in4")
             overrideDirection = fartherSide(canvas, activeRow)
+        isLoopedEdges = (not(objectToBin(activeRow[0]) ==
+            objectToBin(activeRow[-1]) == 1) or
+            activeRow[0].getSide(objects.Side.LEFT).color ==
+            activeRow[-1].getSide(objects.Side.RIGHT).color ==
+            objects.Tile.BLUE)
         newRow, arrangeIndex = generateRow(canvas, activeRow, arrangeIndex,
                 isLeftLoop, isLeftPrimeLoop, isRightLoop, isRightPrimeLoop,
-                overrideDirection, groupGrid)
+                overrideDirection, isLoopedEdges, groupGrid)
         #foo
         #print("newrow", newRow)
         #nextRow = groupGrid.grid[arrangeIndex]
@@ -882,7 +901,7 @@ def doArranging(canvas, grid, gridRes, groupGrid, arrangeIndex, mouseLoc,
                 isSnapped, sidesToSnap, snapdTile, toDraws, tiles,
                 isArranging, isLeftLoop, isLeftPrimeLoop,
                 isLeftDoublePrimeLoop, isRightLoop, isRightDoublePrimeLoop,
-                overrideDirection, grid, gridRes, activeRow)
+                overrideDirection, isLoopedEdges, grid, gridRes, activeRow)
         #side.tile.neighbors.append(side.adjSide.tile)
         #self.snapSides()
         #foo
